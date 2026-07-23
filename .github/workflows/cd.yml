@@ -1,0 +1,28 @@
+name: Ktor CD Pipeline
+
+# 1. THE TRIGGER: Only run this AFTER code is successfully pushed to main
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Wait for the CI pipeline (the tests) to pass before deploying!
+    # (If the tests fail, the deployment is cancelled to protect your live server)
+    needs: [] # We will just run it on push for simplicity, but in a real enterprise app, you'd link the CI job here.
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Deploy to Railway
+        # We pass the secrets we just saved into the runner
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        # This command tells Railway to deploy the specific service we created
+        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --detach
