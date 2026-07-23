@@ -5,10 +5,11 @@ ktor:
   application:
     modules:
       - com.example.DatabaseKt.configureDatabase
+      - com.example.plugins.AuthKt.configureAuth
+      - com.example.RoutingKt.configureRouting
       - com.example.SerializationKt.configureSerialization
       - com.example.SecurityKt.configureSecurity
       - com.example.StatusPagesKt.configureStatusPages
       - com.example.WebsocketsKt.configureWebsockets
       - com.example.RpcKt.configureRpc
       - com.example.ResourcesKt.configureResources
-      - com.example.RoutingKt.configureRouting
