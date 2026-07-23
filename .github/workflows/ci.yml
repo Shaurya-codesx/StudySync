@@ -1,7 +1,5 @@
 name: Ktor CI Pipeline
 
-# 1. THE TRIGGER: When does the factory turn on?
-# It runs every time code is pushed to the 'main' branch, or a Pull Request is opened.
 on:
   push:
     branches: [ "main" ]
@@ -10,31 +8,45 @@ on:
 
 jobs:
   build-and-test:
-    # 2. THE FACTORY FLOOR: What kind of computer do we need?
-    # We are asking GitHub to give us a fresh, blank Linux server.
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: ./server
 
+    # Add a temporary Postgres database just for the CI tests!
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: studysync
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      # Step A: Download your raw source code into the blank server
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step B: Install the heavy machinery (Java 21)
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'gradle' # This remembers your downloaded dependencies to make future runs much faster!
+          cache: 'gradle'
 
-      # Step C: Give the server permission to run your Gradle commands
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Step D: Turn on the machines (Compile the code and run tests)
       - name: Build and Test
+        # Inject the environment variables specifically for this step
+        env:
+          DATABASE_URL: jdbc:postgresql://localhost:5432/studysync?user=testuser&password=testpassword
+          JWT_SECRET: ci-dummy-secret-key-123
         run: ./gradlew build --no-daemon
