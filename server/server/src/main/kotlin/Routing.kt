@@ -6,6 +6,8 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.resources.*
+import com.example.models.RegisterRequest
+import io.ktor.server.request.receive
 import io.ktor.server.resources.*
 import io.ktor.server.resources.Resources
 import kotlinx.serialization.Serializable
@@ -26,12 +28,15 @@ fun Application.configureRouting() {
         }
 
         // --- NEW ROUTE ---
-        post("/register-test") {
-            // For now, we are hardcoding the data just to prove the database insert works!
-            val newUserId = userService.createUser("testuser", "supersecretpassword")
+        post("/register") {
+            // 1. Intercept the incoming JSON and turn it into our Kotlin object
+            val request = call.receive<RegisterRequest>()
+
+            // 2. Pass the dynamic data to the database
+            val newUserId = userService.createUser(request.username, request.password)
 
             if (newUserId != null) {
-                call.respondText("Success! User created with ID: $newUserId")
+                call.respondText("Success! User ${request.username} created with ID: $newUserId")
             } else {
                 call.respondText("Failed to create user.")
             }
