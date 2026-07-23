@@ -7,3 +7,8 @@ data class LoginResponse(
     val accessToken: String,
     val refreshToken: String
 )
+
+@Serializable
+data class ErrorResponse(
+    val error: String
+)
