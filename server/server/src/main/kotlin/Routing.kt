@@ -23,7 +23,6 @@ fun Application.configureRouting() {
             get("/protected-test") {
                 val principal = call.principal<JWTPrincipal>()
                 val email = principal?.payload?.getClaim("email")?.asString()
-
                 call.respondText("Success! You have accessed a protected route. Your email is: $email")
             }
         }
