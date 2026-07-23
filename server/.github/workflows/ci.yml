@@ -1,0 +1,36 @@
+name: Ktor CI Pipeline
+
+# 1. THE TRIGGER: When does the factory turn on?
+# It runs every time code is pushed to the 'main' branch, or a Pull Request is opened.
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    # 2. THE FACTORY FLOOR: What kind of computer do we need?
+    # We are asking GitHub to give us a fresh, blank Linux server.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step A: Download your raw source code into the blank server
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step B: Install the heavy machinery (Java 21)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle' # This remembers your downloaded dependencies to make future runs much faster!
+
+      # Step C: Give the server permission to run your Gradle commands
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Step D: Turn on the machines (Compile the code and run tests)
+      - name: Build and Test
+        run: ./gradlew build --no-daemon
