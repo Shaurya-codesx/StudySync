@@ -25,4 +25,4 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         # This command tells Railway to deploy the specific service we created
-        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --detach
+        run: cd server && railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --detach
