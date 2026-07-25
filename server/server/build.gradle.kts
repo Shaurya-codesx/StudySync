@@ -28,6 +28,7 @@ dependencies {
     implementation(ktorLibs.server.websockets)
     implementation(libs.kotlinx.rpc.server)
     implementation(libs.logback.classic)
+    implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
     implementation(project(":core"))
 
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")

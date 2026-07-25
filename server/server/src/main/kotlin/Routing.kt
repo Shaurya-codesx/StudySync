@@ -1,24 +1,36 @@
 package com.example
 
+import com.example.repositories.CardRepository
 import com.example.routes.authRoutes
+import com.example.routes.cardRoutes
+import com.example.routes.deckRoutes
 import com.example.routes.healthRoutes
+import com.example.services.DeckService
 import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
+    // 1. Instantiate the dependencies for our new routes
+    val deckService = DeckService()
+    val cardRepository = CardRepository()
+
     routing {
-        // Our active routes
+        // 2. Existing active routes
         healthRoutes()
         authRoutes()
+
+        // 3. Register the new Phase 5 CRUD routes
+        deckRoutes(deckService)
+        cardRoutes(cardRepository)
 
         get("/") {
             call.respondText("Hello, World!")
         }
 
-        // Our new bouncer-protected route
+        // 4. Your existing test route (great for quick debugging!)
         authenticate("jwt") {
             get("/protected-test") {
                 val principal = call.principal<JWTPrincipal>()

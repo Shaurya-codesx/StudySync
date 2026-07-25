@@ -18,8 +18,8 @@ fun Application.configureAuth() {
                 JWT.require(Algorithm.HMAC256(secret)).build()
             )
             validate { credential ->
-                // If the token has a userId, it is valid! Let them in.
-                if (credential.payload.getClaim("userId").asInt() != null) {
+                // Extract the claim as a String to support our new UUIDs
+                if (credential.payload.getClaim("userId").asString() != null) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null

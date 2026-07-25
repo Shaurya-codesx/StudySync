@@ -7,11 +7,12 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.UUID
 
 class UserRepository {
 
     // 1. Insert User (Roadmap Requirement)
-    fun insertUser(emailInput: String, passwordHashInput: String, displayNameInput: String): Int? {
+    fun insertUser(emailInput: String, passwordHashInput: String, displayNameInput: String): UUID? {
         return transaction {
             val insertStatement = Users.insert {
                 it[email] = emailInput
@@ -31,7 +32,7 @@ class UserRepository {
     }
 
     // 3. Find by ID (For refreshing tokens)
-    fun findById(idInput: Int): ResultRow? {
+    fun findById(idInput: UUID): ResultRow? {
         return transaction {
             Users.select { Users.id eq idInput }.singleOrNull()
         }

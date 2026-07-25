@@ -4,13 +4,14 @@ import com.example.models.Users
 import com.example.repositories.UserRepository
 import com.example.utils.JwtUtils
 import com.example.utils.PasswordUtils
+import java.util.UUID
 
 class AuthService {
     // Bring in the repository so we can talk to the database
     private val userRepository = UserRepository()
 
     // 1. Signup Logic
-    fun signup(emailInput: String, passwordInput: String, displayNameInput: String): Int? {
+    fun signup(emailInput: String, passwordInput: String, displayNameInput: String): UUID? {
         // Hash the password BEFORE it goes to the repository
         val hashedPassword = PasswordUtils.hashPassword(passwordInput)
         return userRepository.insertUser(emailInput, hashedPassword, displayNameInput)
@@ -40,12 +41,14 @@ class AuthService {
     }
 
     // 3. Refresh Logic
+    // 3. Refresh Logic
     fun refresh(refreshTokenInput: String): Pair<String, String>? {
         // 1. Verify the refresh token is valid and not expired
         val decoded = JwtUtils.verifyToken(refreshTokenInput) ?: return null
 
-        // 2. Extract the user ID from the token payload
-        val userId = decoded.getClaim("userId").asInt() ?: return null
+        // 2. Extract the user ID from the token payload as a String, then convert to UUID
+        val userIdString = decoded.getClaim("userId").asString() ?: return null
+        val userId = UUID.fromString(userIdString)
 
         // 3. Find the user in the database to get their email
         val userRow = userRepository.findById(userId) ?: return null

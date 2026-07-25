@@ -1,64 +1,72 @@
 package com.example.models
 
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 
 // 1. Users Table
-object Users : Table() {
-    val id = integer("id").autoIncrement()
-    val email = varchar("email", 255).uniqueIndex() 
-    val passwordHash = varchar("password_hash", 255)
-    val displayName = varchar("display_name", 100).nullable() // Added for the roadmap contract
+object Users : Table("users") {
+    val id = uuid("id").autoGenerate()
+    val email = varchar("email", 255).uniqueIndex()
+    val passwordHash = text("password_hash")
+    val displayName = varchar("display_name", 100).nullable()
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     override val primaryKey = PrimaryKey(id)
 }
 
 // 2. Decks Table
-object Decks : Table() {
-    val id = integer("id").autoIncrement()
-    val title = varchar("title", 100)
-    val userId = integer("user_id").references(Users.id)
+object Decks : Table("decks") {
+    val id = uuid("id").autoGenerate()
+    val userId = uuid("user_id").references(Users.id)
+    val title = text("title")
+    val sourceText = text("source_text").nullable()
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     override val primaryKey = PrimaryKey(id)
 }
 
-// 3. Flashcards Table
-object Flashcards : Table() {
-    val id = integer("id").autoIncrement()
-    val front = text("front")
-    val back = text("back")
-    val deckId = integer("deck_id").references(Decks.id)
-
-    override val primaryKey = PrimaryKey(id)
-}
-
-// 4. Tags Table
-object Tags : Table() {
-    val id = integer("id").autoIncrement()
-    val name = varchar("name", 50).uniqueIndex()
-
-    override val primaryKey = PrimaryKey(id)
-}
-
-// 5. DeckTags Table (Many-to-Many Link)
-object DeckTags : Table() {
-    val deckId = integer("deck_id").references(Decks.id)
-    val tagId = integer("tag_id").references(Tags.id)
-
-    override val primaryKey = PrimaryKey(deckId, tagId)
-}
-
-// 6. StudyProgress Table (Spaced Repetition)
-object StudyProgress : Table() {
-    val id = integer("id").autoIncrement()
-    val cardId = integer("card_id").references(Flashcards.id)
-    val userId = integer("user_id").references(Users.id)
-
-    // Tracks how well the user knows the card (defaults to 2.5 multiplier)
+// 3. Cards Table
+object Cards : Table("cards") {
+    val id = uuid("id").autoGenerate()
+    val deckId = uuid("deck_id").references(Decks.id)
+    val question = text("question")
+    val answer = text("answer")
     val easeFactor = float("ease_factor").default(2.5f)
-    // How many days until the next review
-    val interval = integer("interval").default(0)
-    // Unix timestamp for the exact next review time
-    val nextReview = long("next_review_timestamp")
+    val intervalDays = integer("interval_days").default(0)
+    val repetitions = integer("repetitions").default(0)
+    val dueDate = datetime("due_date").defaultExpression(CurrentDateTime)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     override val primaryKey = PrimaryKey(id)
+}
+
+// 4. Review Logs Table
+object ReviewLogs : Table("review_logs") {
+    val id = uuid("id").autoGenerate()
+    val cardId = uuid("card_id").references(Cards.id)
+    val quality = integer("quality")
+    val reviewedAt = datetime("reviewed_at").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+// 5. Study Rooms Table
+object StudyRooms : Table("study_rooms") {
+    val id = uuid("id").autoGenerate()
+    val code = varchar("code", 6).uniqueIndex()
+    val hostId = uuid("host_id").references(Users.id)
+    val isActive = bool("is_active").default(true)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+// 6. Room Members Table
+object RoomMembers : Table("room_members") {
+    val roomId = uuid("room_id").references(StudyRooms.id)
+    val userId = uuid("user_id").references(Users.id)
+    val joinedAt = datetime("joined_at").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(roomId, userId)
 }
