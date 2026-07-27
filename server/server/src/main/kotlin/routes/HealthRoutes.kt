@@ -6,6 +6,6 @@ import io.ktor.server.routing.*
 
 fun Route.healthRoutes() {
     get("/health") {
-        call.respond(mapOf("status" to "online"))
+        call.respond(mapOf("status" to "yo"))
     }
 }

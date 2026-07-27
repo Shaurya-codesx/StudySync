@@ -7,6 +7,7 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=my_ultra_secure_jwt_secret_key_123
+      - AI_API_KEY=${AI_API_KEY}
       - JWT_ACCESS_EXPIRY_MINUTES=15
       - JWT_REFRESH_EXPIRY_DAYS=30
     depends_on:

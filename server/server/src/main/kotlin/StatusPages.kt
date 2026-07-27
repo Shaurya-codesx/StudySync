@@ -34,5 +34,13 @@ fun Application.configureStatusPages() {
             cause.printStackTrace() // Logs it to your Docker terminal for debugging
             call.respond(HttpStatusCode.InternalServerError, ErrorResponse("An unexpected server error occurred."))
         }
+
+        exception<Throwable> { call, cause ->
+            if (cause.message?.contains("Failed to generate valid flashcards") == true) {
+                call.respond(HttpStatusCode.BadGateway, mapOf("error" to "AI generation failed, please try again. The notes might be too complex or malformed."))
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "An unexpected error occurred: ${cause.message}"))
+            }
+        }
     }
 }

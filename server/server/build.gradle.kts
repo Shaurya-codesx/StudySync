@@ -40,6 +40,10 @@ dependencies {
 
     implementation("io.ktor:ktor-server-auth-jwt")
 
+    implementation("io.ktor:ktor-client-core-jvm")
+    implementation("io.ktor:ktor-client-cio-jvm")
+    implementation("io.ktor:ktor-client-content-negotiation-jvm")
+
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
     testImplementation(libs.kotlinx.rpc.client)
