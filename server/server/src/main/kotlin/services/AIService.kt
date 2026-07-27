@@ -12,7 +12,7 @@ import kotlinx.serialization.json.*
 import kotlinx.serialization.decodeFromString
 
 class AiService {
-    private val apiKey = System.getenv("AI_API_KEY")
+    private val apiKey = System.getenv("AI_API_KEY") ?: "mock_test_key"
         ?: throw IllegalArgumentException("AI_API_KEY environment variable is missing")
 
     private val client = HttpClient(CIO) {

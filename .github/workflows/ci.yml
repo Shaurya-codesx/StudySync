@@ -49,4 +49,5 @@ jobs:
         env:
           DATABASE_URL: jdbc:postgresql://localhost:5432/studysync?user=testuser&password=testpassword
           JWT_SECRET: ci-dummy-secret-key-123
+          AI_API_KEY: mock_api_key
         run: ./gradlew build --no-daemon
