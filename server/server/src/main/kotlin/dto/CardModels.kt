@@ -9,3 +9,17 @@ data class CardResponse(
     val answer: String,
     val dueDate: String
 )
+
+
+@Serializable
+data class ReviewCardRequest(
+    val quality: Int
+)
+
+@Serializable
+data class ReviewCardResponse(
+    val id: String,
+    val easeFactor: Double,
+    val intervalDays: Int,
+    val dueDate: String
+)

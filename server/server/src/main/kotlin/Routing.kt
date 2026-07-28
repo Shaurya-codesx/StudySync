@@ -6,6 +6,7 @@ import com.example.routes.cardRoutes
 import com.example.routes.deckRoutes
 import com.example.routes.healthRoutes
 import com.example.services.AiService
+import com.example.services.CardService
 import com.example.services.DeckService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -18,6 +19,7 @@ fun Application.configureRouting() {
     val deckService = DeckService()
     val aiService = AiService()
     val cardRepository = CardRepository()
+    val cardService = CardService(cardRepository)
 
     routing {
         // 2. Existing active routes
@@ -26,7 +28,7 @@ fun Application.configureRouting() {
 
         // 3. Register the new Phase 5 CRUD routes
         deckRoutes(deckService, aiService)
-        cardRoutes(cardRepository)
+        cardRoutes(cardRepository, cardService)
 
         get("/") {
             call.respondText("Hello, World!")

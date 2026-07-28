@@ -45,6 +45,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation-jvm")
 
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation(ktorLibs.server.testHost)
     testImplementation(libs.kotlinx.rpc.client)
 }
