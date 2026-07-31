@@ -1,0 +1,160 @@
+package com.example.routes
+
+import com.example.dto.CreateRoomResponse
+import com.example.dto.IncomingRoomEvent
+import com.example.dto.JoinRoomResponse
+import com.example.dto.RoomDetailsResponse
+import com.example.dto.RoomMemberDto
+import com.example.models.Users
+import com.example.repositories.RoomRepository
+import com.example.repositories.UserRepository
+import com.example.services.RoomService
+import com.example.utils.JwtUtils
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
+import kotlinx.serialization.json.Json
+import java.util.UUID
+
+private val incomingEventJson = Json { ignoreUnknownKeys = true }
+
+fun Route.roomRoutes(
+    roomRepository: RoomRepository,
+    roomService: RoomService,
+    userRepository: UserRepository
+) {
+    authenticate("jwt") {
+        post("/rooms") {
+            val principal = call.principal<JWTPrincipal>()
+            val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+            if (userIdStr == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid or missing token"))
+                return@post
+            }
+            val hostId = UUID.fromString(userIdStr)
+
+            val room = roomRepository.createRoom(hostId)
+            call.respond(HttpStatusCode.Created, CreateRoomResponse(roomId = room.id.toString(), code = room.code))
+        }
+
+        post("/rooms/{code}/join") {
+            val code = call.parameters["code"]
+            if (code == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing room code"))
+                return@post
+            }
+
+            val principal = call.principal<JWTPrincipal>()
+            val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+            if (userIdStr == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid or missing token"))
+                return@post
+            }
+            val userId = UUID.fromString(userIdStr)
+
+            val room = roomRepository.findRoomByCode(code)
+            if (room == null) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Room not found"))
+                return@post
+            }
+
+            roomRepository.addMember(room.id, userId)
+            val members = roomRepository.getMembers(room.id)
+
+            call.respond(
+                HttpStatusCode.OK,
+                JoinRoomResponse(
+                    roomId = room.id.toString(),
+                    members = members.map { RoomMemberDto(it.userId.toString(), it.displayName) }
+                )
+            )
+        }
+
+        get("/rooms/{code}") {
+            val code = call.parameters["code"]
+            if (code == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing room code"))
+                return@get
+            }
+
+            val room = roomRepository.findRoomByCode(code)
+            if (room == null) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Room not found"))
+                return@get
+            }
+
+            val members = roomRepository.getMembers(room.id)
+
+            call.respond(
+                HttpStatusCode.OK,
+                RoomDetailsResponse(
+                    roomId = room.id.toString(),
+                    hostId = room.hostId.toString(),
+                    isActive = room.isActive,
+                    members = members.map { RoomMemberDto(it.userId.toString(), it.displayName) }
+                )
+            )
+        }
+    }
+
+    // Intentionally NOT wrapped in authenticate("jwt") — per the protocol spec, the token
+    // travels as a query param on the WS handshake, so it's verified manually below.
+    webSocket("/ws/rooms/{code}") {
+        val code = call.parameters["code"]
+        val token = call.request.queryParameters["token"]
+
+        if (code == null || token == null) {
+            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Missing room code or token"))
+            return@webSocket
+        }
+
+        val decoded = JwtUtils.verifyToken(token)
+        val userIdStr = decoded?.getClaim("userId")?.asString()
+        if (userIdStr == null) {
+            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid or expired token"))
+            return@webSocket
+        }
+        val userId = UUID.fromString(userIdStr)
+
+        val room = roomRepository.findRoomByCode(code)
+        if (room == null) {
+            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Room not found"))
+            return@webSocket
+        }
+
+        // must have joined via REST first — the socket only handles live events, not membership
+        if (!roomRepository.isMember(room.id, userId)) {
+            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Join the room via REST before connecting"))
+            return@webSocket
+        }
+
+        val userRow = userRepository.findById(userId)
+        val displayName = userRow?.get(Users.displayName) ?: "Anonymous"
+
+        try {
+            roomService.join(code, room.hostId, userId, displayName, this)
+
+            for (frame in incoming) {
+                if (frame is Frame.Text) {
+                    val text = frame.readText()
+                    val event = try {
+                        incomingEventJson.decodeFromString(IncomingRoomEvent.serializer(), text)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    when (event?.type) {
+                        "timer_start" -> roomService.handleTimerStart(code, userId)
+                        "timer_pause" -> roomService.handleTimerPause(code, userId)
+                    }
+                }
+            }
+        } finally {
+            roomService.leave(code, userId)
+        }
+    }
+}
