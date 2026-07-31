@@ -18,14 +18,16 @@ data class UserLeftEvent(val type: String = "user_left", val userId: String)
 @Serializable
 data class TimerSyncEvent(val type: String = "timer_sync", val state: String, val remainingSeconds: Int)
 
+@Serializable
+data class HostChangedEvent(val type: String = "host_changed", val newHostId: String)
+
 private data class ConnectedMember(
     val userId: UUID,
     val displayName: String,
     val session: DefaultWebSocketServerSession
 )
 
-private class RoomState(val hostId: UUID) {
-    // keyed by userId — a reconnect simply replaces the old session entry
+private class RoomState(var hostId: UUID) {  // was: val hostId — now var
     val members = ConcurrentHashMap<UUID, ConnectedMember>()
     var isTimerRunning: Boolean = false
     var remainingSeconds: Int = DEFAULT_TIMER_SECONDS
@@ -33,7 +35,7 @@ private class RoomState(val hostId: UUID) {
     val mutex = Mutex()
 
     companion object {
-        const val DEFAULT_TIMER_SECONDS = 25 * 60 // 25-minute default Pomodoro
+        const val DEFAULT_TIMER_SECONDS = 25 * 60
     }
 }
 
@@ -59,14 +61,24 @@ class RoomService {
         sendCurrentTimerState(room, session)
     }
 
-    suspend fun leave(code: String, userId: UUID) {
-        val room = rooms[code] ?: return
+    suspend fun leave(code: String, userId: UUID): UUID? {
+        val room = rooms[code] ?: return null
         room.members.remove(userId)
         broadcast(room, json.encodeToString(UserLeftEvent.serializer(), UserLeftEvent(userId = userId.toString())))
 
         if (room.members.isEmpty()) {
             rooms.remove(code) // avoid leaking memory for abandoned rooms
+            return null
         }
+
+        if (userId == room.hostId) {
+            val newHostId = room.members.keys.first()
+            room.hostId = newHostId
+            broadcast(room, json.encodeToString(HostChangedEvent.serializer(), HostChangedEvent(newHostId = newHostId.toString())))
+            return newHostId
+        }
+
+        return null
     }
 
     suspend fun handleTimerStart(code: String, requestingUserId: UUID) {

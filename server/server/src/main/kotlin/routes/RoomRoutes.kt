@@ -154,7 +154,10 @@ fun Route.roomRoutes(
                 }
             }
         } finally {
-            roomService.leave(code, userId)
+            val newHostId = roomService.leave(code, userId)
+            if (newHostId != null) {
+                roomRepository.updateHost(room.id, newHostId)
+            }
         }
     }
 }

@@ -79,6 +79,12 @@ class RoomRepository {
         }
     }
 
+    fun updateHost(roomId: UUID, newHostId: UUID) = transaction {
+        StudyRooms.update({ StudyRooms.id eq roomId }) {
+            it[hostId] = newHostId
+        }
+    }
+
     fun isMember(roomId: UUID, userId: UUID): Boolean = transaction {
         RoomMembers.select {
             (RoomMembers.roomId eq roomId) and (RoomMembers.userId eq userId)
