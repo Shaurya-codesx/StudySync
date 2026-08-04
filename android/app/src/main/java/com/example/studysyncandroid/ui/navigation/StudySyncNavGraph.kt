@@ -9,18 +9,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.studysyncandroid.ui.auth.LoginScreen
+import com.example.studysyncandroid.ui.auth.SignupScreen
 import com.example.studysyncandroid.ui.decks.DeckListScreen
+import com.example.studysyncandroid.ui.decks.GenerateDeckScreen
 import com.example.studysyncandroid.ui.review.ReviewScreen
 import com.example.studysyncandroid.ui.rooms.RoomsScreen
 
 @Composable
 fun StudySyncNavGraph(
     navController: NavHostController = rememberNavController(),
+    startDestination: String = Screen.Login.route,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
         composable(Screen.Login.route) {
@@ -29,14 +32,34 @@ fun StudySyncNavGraph(
                     navController.navigate(Screen.DeckList.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
+                },
+                onNavigateToSignup = { navController.navigate(Screen.Signup.route) }
+            )
+        }
+
+        composable(Screen.Signup.route) {
+            SignupScreen(
+                onSignupSuccess = { navController.popBackStack() },
+                onNavigateToLogin = { navController.popBackStack() }
             )
         }
 
         composable(Screen.DeckList.route) {
             DeckListScreen(
                 onDeckClick = { deckId -> navController.navigate(Screen.Review.createRoute(deckId)) },
-                onRoomsClick = { navController.navigate(Screen.Rooms.route) }
+                onGenerateDeckClick = { navController.navigate(Screen.GenerateDeck.route) },
+                onRoomsClick = { navController.navigate(Screen.Rooms.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.GenerateDeck.route) {
+            GenerateDeckScreen(
+                onDeckGenerated = { navController.popBackStack() }
             )
         }
 

@@ -30,19 +30,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToSignup: () -> Unit,
+fun SignupScreen(
+    onSignupSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+    var displayName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val loginState by viewModel.loginState.collectAsStateWithLifecycle()
+    val signupState by viewModel.signupState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(loginState) {
-        if (loginState is AuthUiState.Success) {
-            onLoginSuccess()
+    LaunchedEffect(signupState) {
+        if (signupState is AuthUiState.Success) {
+            onSignupSuccess()
         }
     }
 
@@ -53,9 +54,17 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("StudySync Lite", style = MaterialTheme.typography.headlineMedium)
+        Text("Create Account", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(32.dp))
 
+        OutlinedTextField(
+            value = displayName,
+            onValueChange = { displayName = it },
+            label = { Text("Display Name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -76,26 +85,27 @@ fun LoginScreen(
         )
         Spacer(Modifier.height(16.dp))
 
-        val state = loginState
+        val state = signupState
         if (state is AuthUiState.Error) {
             Text(text = state.message, color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.height(8.dp))
         }
 
         Button(
-            onClick = { viewModel.login(email.trim(), password) },
-            enabled = state !is AuthUiState.Loading && email.isNotBlank() && password.isNotBlank(),
+            onClick = { viewModel.signup(email.trim(), password, displayName.trim()) },
+            enabled = state !is AuthUiState.Loading &&
+                    email.isNotBlank() && password.isNotBlank() && displayName.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
             if (state is AuthUiState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             } else {
-                Text("Log In")
+                Text("Sign Up")
             }
         }
         Spacer(Modifier.height(12.dp))
-        TextButton(onClick = onNavigateToSignup) {
-            Text("Don't have an account? Sign up")
+        TextButton(onClick = onNavigateToLogin) {
+            Text("Already have an account? Log in")
         }
     }
 }

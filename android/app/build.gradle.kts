@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.websockets)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -1,9 +1,9 @@
-package com.example.models
+package com.example.studysyncandroid.data.remote.dto
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RegisterRequest(
+data class SignupRequest(
     val email: String,
     val password: String,
     val displayName: String
@@ -20,6 +20,12 @@ data class SignupResponse(
 data class LoginRequest(
     val email: String,
     val password: String
+)
+
+@Serializable
+data class AuthResponse(
+    val accessToken: String,
+    val refreshToken: String
 )
 
 @Serializable

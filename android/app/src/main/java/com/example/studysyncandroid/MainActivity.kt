@@ -8,8 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
-import com.example.studysyncandroid.ui.navigation.StudySyncNavGraph
+import com.example.studysyncandroid.ui.StudySyncApp
 import com.example.studysyncandroid.ui.theme.StudySyncAndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,11 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             StudySyncAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val navController = rememberNavController()
-                    StudySyncNavGraph(
-                        navController = navController,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    StudySyncApp(modifier = Modifier.padding(innerPadding))
                 }
             }
         }

@@ -4,6 +4,7 @@ import com.example.models.LoginRequest
 import com.example.models.LoginResponse
 import com.example.models.RefreshRequest
 import com.example.models.RegisterRequest
+import com.example.models.SignupResponse
 import com.example.services.AuthService
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -19,13 +20,22 @@ fun Route.authRoutes() {
         post("/signup") {
             val request = call.receive<RegisterRequest>()
 
-            // Pass data to the new AuthService
             val newUserId = authService.signup(request.email, request.password, request.displayName)
 
             if (newUserId != null) {
-                call.respondText("Success! User ${request.displayName}, EmailId : ${request.email} created with ID: $newUserId", status = HttpStatusCode.Created)
+                call.respond(
+                    HttpStatusCode.Created,
+                    SignupResponse(
+                        userId = newUserId.toString(),
+                        email = request.email,
+                        displayName = request.displayName
+                    )
+                )
             } else {
-                call.respondText("Failed to create user.", status = HttpStatusCode.InternalServerError)
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to create user.")
+                )
             }
         }
 
