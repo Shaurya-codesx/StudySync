@@ -25,4 +25,7 @@ interface CardDao {
 
     @Update
     suspend fun updateCard(card: CardEntity)
+
+    @Query("UPDATE cards SET dueDate = :newDueDate WHERE id = :cardId")
+    suspend fun updateCardDueDate(cardId: String, newDueDate: String)
 }
