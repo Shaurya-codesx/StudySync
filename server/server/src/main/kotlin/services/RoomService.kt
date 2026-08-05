@@ -39,6 +39,8 @@ private class RoomState(var hostId: UUID) {  // was: val hostId — now var
     }
 }
 
+data class LeaveResult(val isRoomEmpty: Boolean, val newHostId: UUID? = null)
+
 class RoomService {
 
     private val rooms = ConcurrentHashMap<String, RoomState>()
@@ -61,24 +63,25 @@ class RoomService {
         sendCurrentTimerState(room, session)
     }
 
-    suspend fun leave(code: String, userId: UUID): UUID? {
-        val room = rooms[code] ?: return null
+    suspend fun leave(code: String, userId: UUID): LeaveResult {
+        val room = rooms[code] ?: return LeaveResult(isRoomEmpty = true)
+
         room.members.remove(userId)
         broadcast(room, json.encodeToString(UserLeftEvent.serializer(), UserLeftEvent(userId = userId.toString())))
 
         if (room.members.isEmpty()) {
             rooms.remove(code) // avoid leaking memory for abandoned rooms
-            return null
+            return LeaveResult(isRoomEmpty = true) // Tell the router the room is empty
         }
 
         if (userId == room.hostId) {
             val newHostId = room.members.keys.first()
             room.hostId = newHostId
             broadcast(room, json.encodeToString(HostChangedEvent.serializer(), HostChangedEvent(newHostId = newHostId.toString())))
-            return newHostId
+            return LeaveResult(isRoomEmpty = false, newHostId = newHostId)
         }
 
-        return null
+        return LeaveResult(isRoomEmpty = false)
     }
 
     suspend fun handleTimerStart(code: String, requestingUserId: UUID) {

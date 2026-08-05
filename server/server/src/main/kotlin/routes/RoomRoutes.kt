@@ -58,8 +58,8 @@ fun Route.roomRoutes(
             val userId = UUID.fromString(userIdStr)
 
             val room = roomRepository.findRoomByCode(code)
-            if (room == null) {
-                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Room not found"))
+            if (room == null || !room.isActive) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Room not found or no longer active"))
                 return@post
             }
 
@@ -83,7 +83,7 @@ fun Route.roomRoutes(
             }
 
             val room = roomRepository.findRoomByCode(code)
-            if (room == null) {
+            if (room == null || !room.isActive) {
                 call.respond(HttpStatusCode.NotFound, mapOf("error" to "Room not found"))
                 return@get
             }
@@ -154,9 +154,15 @@ fun Route.roomRoutes(
                 }
             }
         } finally {
-            val newHostId = roomService.leave(code, userId)
-            if (newHostId != null) {
-                roomRepository.updateHost(room.id, newHostId)
+            val leaveResult = roomService.leave(code, userId)
+            roomRepository.removeMember(room.id, userId)
+
+            if (leaveResult.isRoomEmpty) {
+                // HARD DELETE: Completely wipe the room from the database
+                roomRepository.deleteRoom(room.id)
+            } else if (leaveResult.newHostId != null) {
+                // The host left but others remain, assign the new host
+                roomRepository.updateHost(room.id, leaveResult.newHostId)
             }
         }
     }

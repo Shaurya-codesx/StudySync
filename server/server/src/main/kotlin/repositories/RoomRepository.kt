@@ -4,6 +4,7 @@ import com.example.models.RoomMembers
 import com.example.models.StudyRooms
 import com.example.models.Users
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
@@ -85,6 +86,12 @@ class RoomRepository {
         }
     }
 
+    fun deactivateRoom(roomId: UUID) = transaction {
+        StudyRooms.update({ StudyRooms.id eq roomId }) {
+            it[isActive] = false
+        }
+    }
+
     fun isMember(roomId: UUID, userId: UUID): Boolean = transaction {
         RoomMembers.select {
             (RoomMembers.roomId eq roomId) and (RoomMembers.userId eq userId)
@@ -100,5 +107,15 @@ class RoomRepository {
                     displayName = it[Users.displayName] ?: "Anonymous"
                 )
             }
+    }
+
+    fun removeMember(roomId: UUID, userId: UUID) = transaction {
+        RoomMembers.deleteWhere {
+            (RoomMembers.roomId eq roomId) and (RoomMembers.userId eq userId)
+        }
+    }
+
+    fun deleteRoom(roomId: UUID) = transaction {
+        StudyRooms.deleteWhere { StudyRooms.id eq roomId }
     }
 }
