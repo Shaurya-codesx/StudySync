@@ -16,7 +16,7 @@ data class UserJoinedEvent(val type: String = "user_joined", val userId: String,
 data class UserLeftEvent(val type: String = "user_left", val userId: String)
 
 @Serializable
-data class TimerSyncEvent(val type: String = "timer_sync", val state: String, val remainingSeconds: Int)
+data class TimerSyncEvent(val type: String = "timer_sync", val state: String, val remainingSeconds: Int, val mode: String = "work")
 
 @Serializable
 data class HostChangedEvent(val type: String = "host_changed", val newHostId: String)
@@ -36,6 +36,7 @@ private class RoomState(var hostId: UUID) {
     var isTimerRunning: Boolean = false
     var remainingSeconds: Int = DEFAULT_TIMER_SECONDS
     var timerStartedAtEpochMillis: Long? = null
+    var mode: String = "work"
     val mutex = Mutex()
 
     companion object {
@@ -123,17 +124,18 @@ class RoomService {
     }
 
     // NEW: Allows the host to change the timer duration (only when paused)
-    suspend fun handleTimerUpdateDuration(code: String, requestingUserId: UUID, newDurationSeconds: Int) {
+    suspend fun handleTimerUpdateDuration(code: String, requestingUserId: UUID, newDurationSeconds: Int, newMode: String?) {
         val room = rooms[code] ?: return
         if (requestingUserId != room.hostId) return // Only host can change time
 
         room.mutex.withLock {
             if (!room.isTimerRunning) {
-                // Instantly update the remaining time to the new custom duration
                 room.remainingSeconds = newDurationSeconds
+                if (newMode != null) {
+                    room.mode = newMode // Update the mode if provided
+                }
             }
         }
-        // Broadcast the new time to everyone's screen
         broadcastTimerSync(room)
     }
 
@@ -147,7 +149,8 @@ class RoomService {
     private suspend fun broadcastTimerSync(room: RoomState) {
         val event = TimerSyncEvent(
             state = if (room.isTimerRunning) "running" else "paused",
-            remainingSeconds = currentRemaining(room)
+            remainingSeconds = currentRemaining(room),
+            mode = room.mode // NEW
         )
         broadcast(room, json.encodeToString(TimerSyncEvent.serializer(), event))
     }
@@ -155,7 +158,8 @@ class RoomService {
     private suspend fun sendCurrentTimerState(room: RoomState, session: DefaultWebSocketServerSession) {
         val event = TimerSyncEvent(
             state = if (room.isTimerRunning) "running" else "paused",
-            remainingSeconds = currentRemaining(room)
+            remainingSeconds = currentRemaining(room),
+            mode = room.mode // NEW
         )
         try {
             session.send(Frame.Text(json.encodeToString(TimerSyncEvent.serializer(), event)))

@@ -42,5 +42,6 @@ data class RoomDetailsResponse(
 @Serializable
 data class IncomingRoomEvent(
     val type: String,
-    val durationSeconds: Int? = null
+    val durationSeconds: Int? = null,
+    val mode: String? = null
 )

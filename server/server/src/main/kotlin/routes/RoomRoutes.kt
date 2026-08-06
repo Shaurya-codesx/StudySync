@@ -206,7 +206,7 @@ fun Route.roomRoutes(
                         // NEW: Handle host changing the time
                         "timer_update" -> {
                             if (event.durationSeconds != null) {
-                                roomService.handleTimerUpdateDuration(code, userId, event.durationSeconds)
+                                roomService.handleTimerUpdateDuration(code, userId, event.durationSeconds, event.mode)
                             }
                         }
                     }

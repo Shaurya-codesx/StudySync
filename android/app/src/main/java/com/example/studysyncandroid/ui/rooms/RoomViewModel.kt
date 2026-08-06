@@ -127,9 +127,9 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun changeTimerDuration(minutes: Int) {
+    fun changeTimerDuration(minutes: Int, mode: String = "work") {
         viewModelScope.launch {
-            webSocketClient.sendTimerUpdateDuration(minutes * 60)
+            webSocketClient.sendTimerUpdateDuration(minutes * 60, mode)
         }
     }
 
@@ -158,6 +158,15 @@ class RoomViewModel @Inject constructor(
             } else ""
         } catch (e: Exception) {
             ""
+        }
+    }
+
+    // Add this inside RoomViewModel, right at the bottom
+    override fun onCleared() {
+        super.onCleared()
+        // Guarantee we disconnect from the WebSocket if the ViewModel is destroyed
+        viewModelScope.launch {
+            webSocketClient.disconnect()
         }
     }
 }

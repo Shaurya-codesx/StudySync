@@ -29,7 +29,8 @@ data class RoomLiveState(
     val currentUserId: String = "",  // NEW: Needed to evaluate isHost
     val members: List<Member> = emptyList(),
     val timerState: String = "paused",
-    val remainingSeconds: Int = 0
+    val remainingSeconds: Int = 0,
+    val mode: String = "work"
 ) {
     data class Member(val userId: String, val displayName: String)
 
@@ -125,7 +126,8 @@ class WebSocketClient @Inject constructor(
                         _roomState.update { state ->
                             state.copy(
                                 timerState = event.state,
-                                remainingSeconds = event.remainingSeconds
+                                remainingSeconds = event.remainingSeconds,
+                                mode = event.mode ?: state.mode
                             )
                         }
                     }
@@ -160,8 +162,8 @@ class WebSocketClient @Inject constructor(
         session?.send(Frame.Text(json.encodeToString(event)))
     }
 
-    suspend fun sendTimerUpdateDuration(seconds: Int) {
-        val event = WsEvent(type = "timer_update", durationSeconds = seconds)
+    suspend fun sendTimerUpdateDuration(seconds: Int, mode: String = "work") {
+        val event = WsEvent(type = "timer_update", durationSeconds = seconds, mode = mode)
         session?.send(Frame.Text(json.encodeToString(event)))
     }
 

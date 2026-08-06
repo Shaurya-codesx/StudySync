@@ -17,5 +17,6 @@ data class WsEvent(
     // NEW: Field for room_name_changed
     val newName: String? = null,
     // NEW: Field for timer_update (outgoing custom duration)
-    val durationSeconds: Int? = null
+    val durationSeconds: Int? = null,
+    val mode: String? = null
 )
