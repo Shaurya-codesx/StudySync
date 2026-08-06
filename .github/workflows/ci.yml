@@ -14,7 +14,6 @@ jobs:
       run:
         working-directory: ./server
 
-    # Add a temporary Postgres database just for the CI tests!
     services:
       postgres:
         image: postgres:latest
@@ -45,7 +44,6 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Test
-        # Inject the environment variables specifically for this step
         env:
           DATABASE_URL: jdbc:postgresql://localhost:5432/studysync?user=testuser&password=testpassword
           JWT_SECRET: ci-dummy-secret-key-123
