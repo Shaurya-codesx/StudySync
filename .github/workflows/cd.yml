@@ -11,7 +11,7 @@ jobs:
 
     # Wait for the CI pipeline (the tests) to pass before deploying!
     # (If the tests fail, the deployment is cancelled to protect your live server)
-    needs: [] # We will just run it on push for simplicity, but in a real enterprise app, you'd link the CI job here.
+    # We will just run it on push for simplicity, but in a real enterprise app, you'd link the CI job here.
 
     steps:
       - name: Checkout Repository
