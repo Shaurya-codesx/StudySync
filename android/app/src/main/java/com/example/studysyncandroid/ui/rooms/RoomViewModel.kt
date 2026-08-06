@@ -1,16 +1,20 @@
 package com.example.studysyncandroid.ui.rooms
 
+import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.studysyncandroid.data.local.TokenDataStore
 import com.example.studysyncandroid.data.remote.RoomLiveState
 import com.example.studysyncandroid.data.remote.WebSocketClient
 import com.example.studysyncandroid.data.repository.RoomRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import javax.inject.Inject
 
 data class RoomUiState(
@@ -22,20 +26,20 @@ data class RoomUiState(
 @HiltViewModel
 class RoomViewModel @Inject constructor(
     private val roomRepository: RoomRepository,
-    private val webSocketClient: WebSocketClient
+    private val webSocketClient: WebSocketClient,
+    private val tokenDataStore: TokenDataStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RoomUiState())
     val uiState: StateFlow<RoomUiState> = _uiState.asStateFlow()
 
-    // Expose the live WebSocket state directly to the UI
     val liveState: StateFlow<RoomLiveState> = webSocketClient.roomState
 
     init {
-        // Local Ticker: Counts down every second while the timer is running
+        // Local Ticker: Counts down every second while the timer state is "running"
         viewModelScope.launch {
             while (true) {
-                kotlinx.coroutines.delay(1000)
+                delay(1000)
                 if (liveState.value.timerState == "running") {
                     webSocketClient.decrementTimer()
                 }
@@ -43,72 +47,117 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun createRoom() {
+    fun createRoom(roomName: String) {
+        if (roomName.isBlank()) {
+            _uiState.update { it.copy(error = "Room name cannot be empty") }
+            return
+        }
+
         _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            roomRepository.createRoom().fold(
+            val token = tokenDataStore.getAccessTokenOnce()
+            val myUserId = if (token != null) extractUserIdFromToken(token) else ""
+
+            roomRepository.createRoom(roomName).fold(
                 onSuccess = { response ->
                     _uiState.update { it.copy(isLoading = false, currentRoomCode = response.code) }
-                    // Host has no initial members besides themselves, which the socket will broadcast
-                    connectToSocket(response.code, emptyList())
+                    webSocketClient.connect(
+                        roomCode = response.code,
+                        roomName = response.name,
+                        hostId = myUserId,
+                        currentUserId = myUserId,
+                        initialMembers = emptyList()
+                    )
                 },
-                onFailure = {
-                    _uiState.update { it.copy(isLoading = false, error = "Failed to create room.") }
+                onFailure = { err ->
+                    _uiState.update { it.copy(isLoading = false, error = err.message ?: "Failed to create room") }
                 }
             )
         }
     }
 
     fun joinRoom(code: String) {
-        if (code.isBlank()) return
+        if (code.isBlank()) {
+            _uiState.update { it.copy(error = "Room code cannot be empty") }
+            return
+        }
 
         _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            roomRepository.joinRoom(code).fold(
-                onSuccess = { response ->
-                    _uiState.update { it.copy(isLoading = false, currentRoomCode = code) }
+            val token = tokenDataStore.getAccessTokenOnce()
+            val myUserId = if (token != null) extractUserIdFromToken(token) else ""
 
-                    // Map REST members to WebSocket LiveState members so UI doesn't blink empty
-                    val initialMembers = response.members.map {
-                        RoomLiveState.Member(it.userId, it.displayName)
-                    }
-                    connectToSocket(code, initialMembers)
+            roomRepository.getRoom(code).fold(
+                onSuccess = { detailsResponse ->
+                    roomRepository.joinRoom(code).fold(
+                        onSuccess = { joinResponse ->
+                            _uiState.update { it.copy(isLoading = false, currentRoomCode = code) }
+                            val initialMembers = joinResponse.members.map {
+                                RoomLiveState.Member(it.userId, it.displayName)
+                            }
+                            webSocketClient.connect(
+                                roomCode = code,
+                                roomName = detailsResponse.name,
+                                hostId = detailsResponse.hostId,
+                                currentUserId = myUserId,
+                                initialMembers = initialMembers
+                            )
+                        },
+                        onFailure = { err ->
+                            _uiState.update { it.copy(isLoading = false, error = err.message ?: "Failed to join room") }
+                        }
+                    )
                 },
-                onFailure = {
-                    _uiState.update { it.copy(isLoading = false, error = "Failed to join. Invalid code?") }
+                onFailure = { err ->
+                    _uiState.update { it.copy(isLoading = false, error = err.message ?: "Room not found") }
                 }
             )
         }
     }
 
-    private fun connectToSocket(code: String, initialMembers: List<RoomLiveState.Member>) {
+    fun startTimer() {
         viewModelScope.launch {
-            webSocketClient.connect(code, initialMembers)
+            webSocketClient.sendTimerStart()
         }
     }
 
-    fun toggleTimer() {
+    fun pauseTimer() {
         viewModelScope.launch {
-            if (liveState.value.timerState == "running") {
-                webSocketClient.sendTimerPause()
-            } else {
-                webSocketClient.sendTimerStart()
-            }
+            webSocketClient.sendTimerPause()
+        }
+    }
+
+    fun changeTimerDuration(minutes: Int) {
+        viewModelScope.launch {
+            webSocketClient.sendTimerUpdateDuration(minutes * 60)
+        }
+    }
+
+    fun renameRoom(newName: String) {
+        val code = uiState.value.currentRoomCode ?: return
+        if (newName.isBlank()) return
+
+        viewModelScope.launch {
+            roomRepository.editRoomName(code, newName)
         }
     }
 
     fun leaveRoom() {
         viewModelScope.launch {
             webSocketClient.disconnect()
-            _uiState.update { it.copy(currentRoomCode = null) }
+            _uiState.update { RoomUiState() }
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        // Ensure we drop the socket connection if the ViewModel is destroyed
-        viewModelScope.launch {
-            webSocketClient.disconnect()
+    private fun extractUserIdFromToken(token: String): String {
+        return try {
+            val parts = token.split(".")
+            if (parts.size == 3) {
+                val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
+                JSONObject(payload).optString("userId", "")
+            } else ""
+        } catch (e: Exception) {
+            ""
         }
     }
 }

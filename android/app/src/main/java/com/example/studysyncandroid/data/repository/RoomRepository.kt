@@ -9,8 +9,9 @@ import javax.inject.Inject
 class RoomRepository @Inject constructor(
     private val roomApi: RoomApi
 ) {
-    suspend fun createRoom(): Result<CreateRoomResponse> = runCatching {
-        roomApi.createRoom()
+    // NEW: Accepts room name
+    suspend fun createRoom(name: String): Result<CreateRoomResponse> = runCatching {
+        roomApi.createRoom(name)
     }
 
     suspend fun joinRoom(code: String): Result<JoinRoomResponse> = runCatching {
@@ -19,5 +20,10 @@ class RoomRepository @Inject constructor(
 
     suspend fun getRoom(code: String): Result<GetRoomResponse> = runCatching {
         roomApi.getRoom(code)
+    }
+
+    // NEW: Edit room name
+    suspend fun editRoomName(code: String, newName: String): Result<Unit> = runCatching {
+        roomApi.editRoomName(code, newName)
     }
 }

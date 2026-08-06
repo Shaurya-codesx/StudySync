@@ -8,7 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.studysyncandroid.data.remote.RoomLiveState
@@ -33,7 +34,7 @@ fun RoomsScreen(
                 LobbyContent(
                     isLoading = uiState.isLoading,
                     error = uiState.error,
-                    onCreateRoom = { viewModel.createRoom() },
+                    onCreateRoom = { name -> viewModel.createRoom(name) },
                     onJoinRoom = { code -> viewModel.joinRoom(code) }
                 )
             } else {
@@ -41,7 +42,10 @@ fun RoomsScreen(
                 ActiveRoomContent(
                     roomCode = uiState.currentRoomCode!!,
                     liveState = liveState,
-                    onToggleTimer = { viewModel.toggleTimer() },
+                    onStartTimer = { viewModel.startTimer() },
+                    onPauseTimer = { viewModel.pauseTimer() },
+                    onChangeDuration = { minutes -> viewModel.changeTimerDuration(minutes) },
+                    onRenameRoom = { newName -> viewModel.renameRoom(newName) },
                     onLeaveRoom = { viewModel.leaveRoom() }
                 )
             }
@@ -53,9 +57,10 @@ fun RoomsScreen(
 private fun LobbyContent(
     isLoading: Boolean,
     error: String?,
-    onCreateRoom: () -> Unit,
+    onCreateRoom: (String) -> Unit,
     onJoinRoom: (String) -> Unit
 ) {
+    var roomName by remember { mutableStateOf("") }
     var joinCode by remember { mutableStateOf("") }
 
     Column(
@@ -69,9 +74,18 @@ private fun LobbyContent(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
+        // CREATE ROOM SECTION
+        OutlinedTextField(
+            value = roomName,
+            onValueChange = { roomName = it },
+            label = { Text("New Room Name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = onCreateRoom,
-            enabled = !isLoading,
+            onClick = { onCreateRoom(roomName) },
+            enabled = !isLoading && roomName.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp)
         ) {
             Text("Create New Room")
@@ -83,16 +97,15 @@ private fun LobbyContent(
             modifier = Modifier.padding(vertical = 24.dp)
         )
 
+        // JOIN ROOM SECTION
         OutlinedTextField(
             value = joinCode,
             onValueChange = { joinCode = it.uppercase() },
-            label = { Text("Enter Room Code") },
+            label = { Text("Enter 6-Digit Code") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = { onJoinRoom(joinCode) },
             enabled = !isLoading && joinCode.isNotBlank(),
@@ -119,17 +132,44 @@ private fun LobbyContent(
 private fun ActiveRoomContent(
     roomCode: String,
     liveState: RoomLiveState,
-    onToggleTimer: () -> Unit,
+    onStartTimer: () -> Unit,
+    onPauseTimer: () -> Unit,
+    onChangeDuration: (Int) -> Unit,
+    onRenameRoom: (String) -> Unit,
     onLeaveRoom: () -> Unit
 ) {
+    var showRenameDialog by remember { mutableStateOf(false) }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
+        // HEADER: Room Name & Code
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = liveState.roomName.ifEmpty { "Study Room" },
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (liveState.isHost) {
+                IconButton(onClick = { showRenameDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Room Name",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
         Text(
-            text = "Room: $roomCode",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
+            text = "Code: $roomCode",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
@@ -137,13 +177,14 @@ private fun ActiveRoomContent(
             text = if (liveState.isConnected) "Status: Connected (Live)" else "Status: Reconnecting...",
             color = if (liveState.isConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Timer Display
+        // TIMER CARD
         val minutes = liveState.remainingSeconds / 60
         val seconds = liveState.remainingSeconds % 60
         val timerText = String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
+        val isRunning = liveState.timerState == "running"
 
         Card(
             modifier = Modifier
@@ -160,14 +201,41 @@ private fun ActiveRoomContent(
                     style = MaterialTheme.typography.displayLarge,
                     fontWeight = FontWeight.SemiBold
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onToggleTimer) {
-                    Text(if (liveState.timerState == "running") "Pause Timer" else "Start Timer")
+
+                if (liveState.isHost) {
+                    Button(
+                        onClick = { if (isRunning) onPauseTimer() else onStartTimer() },
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    ) {
+                        Text(if (isRunning) "Pause Timer" else "Start Timer")
+                    }
+
+                    // Custom duration chips (only visible to host when paused)
+                    if (!isRunning) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Set Timer:", style = MaterialTheme.typography.labelMedium)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            FilterChip(selected = false, onClick = { onChangeDuration(15) }, label = { Text("15m") })
+                            FilterChip(selected = false, onClick = { onChangeDuration(25) }, label = { Text("25m") })
+                            FilterChip(selected = false, onClick = { onChangeDuration(50) }, label = { Text("50m") })
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "The host controls the timer.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
 
-        // Members List
+        // MEMBERS LIST
         Text(
             text = "Members (${liveState.members.size})",
             style = MaterialTheme.typography.titleMedium,
@@ -179,8 +247,26 @@ private fun ActiveRoomContent(
         ) {
             items(liveState.members) { member ->
                 ListItem(
-                    headlineContent = { Text(member.displayName) },
-                    supportingContent = { Text(member.userId, style = MaterialTheme.typography.labelSmall) }
+                    headlineContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(member.displayName)
+                            if (member.userId == liveState.hostId) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "👑 Host",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    },
+                    supportingContent = {
+                        Text(
+                            text = if (member.userId == liveState.currentUserId) "You" else member.userId.take(8) + "...",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 )
                 HorizontalDivider()
             }
@@ -192,5 +278,39 @@ private fun ActiveRoomContent(
         ) {
             Text("Leave Room", color = MaterialTheme.colorScheme.error)
         }
+    }
+
+    // RENAME DIALOG
+    if (showRenameDialog) {
+        var editNameInput by remember { mutableStateOf(liveState.roomName) }
+        AlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text("Rename Room") },
+            text = {
+                OutlinedTextField(
+                    value = editNameInput,
+                    onValueChange = { editNameInput = it },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (editNameInput.isNotBlank()) {
+                            onRenameRoom(editNameInput)
+                        }
+                        showRenameDialog = false
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRenameDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

@@ -21,13 +21,17 @@ data class TimerSyncEvent(val type: String = "timer_sync", val state: String, va
 @Serializable
 data class HostChangedEvent(val type: String = "host_changed", val newHostId: String)
 
+// NEW: Event to broadcast when the host changes the room name
+@Serializable
+data class RoomNameChangedEvent(val type: String = "room_name_changed", val newName: String)
+
 private data class ConnectedMember(
     val userId: UUID,
     val displayName: String,
     val session: DefaultWebSocketServerSession
 )
 
-private class RoomState(var hostId: UUID) {  // was: val hostId — now var
+private class RoomState(var hostId: UUID) {
     val members = ConcurrentHashMap<UUID, ConnectedMember>()
     var isTimerRunning: Boolean = false
     var remainingSeconds: Int = DEFAULT_TIMER_SECONDS
@@ -108,6 +112,28 @@ class RoomService {
                 room.timerStartedAtEpochMillis = null
             }
         }
+        broadcastTimerSync(room)
+    }
+
+    // NEW: Broadcasts the updated name to all clients instantly
+    suspend fun broadcastNameChange(code: String, newName: String) {
+        val room = rooms[code] ?: return
+        val event = RoomNameChangedEvent(newName = newName)
+        broadcast(room, json.encodeToString(RoomNameChangedEvent.serializer(), event))
+    }
+
+    // NEW: Allows the host to change the timer duration (only when paused)
+    suspend fun handleTimerUpdateDuration(code: String, requestingUserId: UUID, newDurationSeconds: Int) {
+        val room = rooms[code] ?: return
+        if (requestingUserId != room.hostId) return // Only host can change time
+
+        room.mutex.withLock {
+            if (!room.isTimerRunning) {
+                // Instantly update the remaining time to the new custom duration
+                room.remainingSeconds = newDurationSeconds
+            }
+        }
+        // Broadcast the new time to everyone's screen
         broadcastTimerSync(room)
     }
 

@@ -11,6 +11,7 @@ import java.util.UUID
 data class RoomInfo(
     val id: UUID,
     val code: String,
+    val name: String, // NEW
     val hostId: UUID,
     val isActive: Boolean
 )
@@ -35,22 +36,22 @@ class RoomRepository {
         }
     }
 
-    fun createRoom(hostId: UUID): RoomInfo {
+    fun createRoom(hostId: UUID, roomName: String): RoomInfo {
         val code = generateUniqueCode()
         return transaction {
             val insertStatement = StudyRooms.insert {
                 it[StudyRooms.code] = code
+                it[StudyRooms.name] = roomName // NEW
                 it[StudyRooms.hostId] = hostId
             }
             val roomId = insertStatement[StudyRooms.id]
 
-            // host is automatically a member of their own room
             RoomMembers.insert {
                 it[RoomMembers.roomId] = roomId
                 it[RoomMembers.userId] = hostId
             }
 
-            RoomInfo(id = roomId, code = code, hostId = hostId, isActive = true)
+            RoomInfo(id = roomId, code = code, name = roomName, hostId = hostId, isActive = true)
         }
     }
 
@@ -60,11 +61,18 @@ class RoomRepository {
                 RoomInfo(
                     id = it[StudyRooms.id],
                     code = it[StudyRooms.code],
+                    name = it[StudyRooms.name], // NEW
                     hostId = it[StudyRooms.hostId],
                     isActive = it[StudyRooms.isActive]
                 )
             }
             .singleOrNull()
+    }
+
+    fun updateRoomName(roomId: UUID, newName: String) = transaction {
+        StudyRooms.update({ StudyRooms.id eq roomId }) {
+            it[name] = newName
+        }
     }
 
     fun addMember(roomId: UUID, userId: UUID) = transaction {

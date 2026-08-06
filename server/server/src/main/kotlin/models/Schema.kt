@@ -55,6 +55,7 @@ object ReviewLogs : Table("review_logs") {
 object StudyRooms : Table("study_rooms") {
     val id = uuid("id").autoGenerate()
     val code = varchar("code", 6).uniqueIndex()
+    val name = varchar("name", 100)
     val hostId = uuid("host_id").references(Users.id)
     val isActive = bool("is_active").default(true)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)

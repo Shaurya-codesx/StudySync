@@ -11,5 +11,11 @@ data class WsEvent(
     val displayName: String? = null,
     // Fields for timer_sync
     val state: String? = null, // "running" or "paused"
-    val remainingSeconds: Int? = null
+    val remainingSeconds: Int? = null,
+    // NEW: Field for host_changed
+    val newHostId: String? = null,
+    // NEW: Field for room_name_changed
+    val newName: String? = null,
+    // NEW: Field for timer_update (outgoing custom duration)
+    val durationSeconds: Int? = null
 )

@@ -24,11 +24,17 @@ import javax.inject.Singleton
 // Represents the live state of the room for the UI to observe
 data class RoomLiveState(
     val isConnected: Boolean = false,
+    val roomName: String = "",       // NEW
+    val hostId: String = "",         // NEW
+    val currentUserId: String = "",  // NEW: Needed to evaluate isHost
     val members: List<Member> = emptyList(),
     val timerState: String = "paused",
     val remainingSeconds: Int = 0
 ) {
     data class Member(val userId: String, val displayName: String)
+
+    // Helper property to check if the current user is the host
+    val isHost: Boolean get() = hostId.isNotEmpty() && hostId == currentUserId
 }
 
 @Singleton
@@ -42,11 +48,23 @@ class WebSocketClient @Inject constructor(
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun connect(roomCode: String, initialMembers: List<RoomLiveState.Member>) {
+    suspend fun connect(
+        roomCode: String,
+        roomName: String,
+        hostId: String,
+        currentUserId: String,
+        initialMembers: List<RoomLiveState.Member>
+    ) {
         val token = tokenDataStore.getAccessTokenOnce() ?: return
 
-        // Initialize state with members fetched from the REST API
-        _roomState.value = RoomLiveState(isConnected = false, members = initialMembers)
+        // Initialize state with room metadata and members fetched from the REST API
+        _roomState.value = RoomLiveState(
+            isConnected = false,
+            roomName = roomName,
+            hostId = hostId,
+            currentUserId = currentUserId,
+            members = initialMembers
+        )
 
         try {
             session = client.webSocketSession {
@@ -88,7 +106,6 @@ class WebSocketClient @Inject constructor(
                     if (event.userId != null && event.displayName != null) {
                         _roomState.update { state ->
                             val newMember = RoomLiveState.Member(event.userId, event.displayName)
-                            // Add member if not already in the list
                             val updatedMembers = if (state.members.none { it.userId == event.userId }) {
                                 state.members + newMember
                             } else state.members
@@ -113,6 +130,20 @@ class WebSocketClient @Inject constructor(
                         }
                     }
                 }
+                "host_changed" -> {
+                    if (event.newHostId != null) {
+                        _roomState.update { state ->
+                            state.copy(hostId = event.newHostId)
+                        }
+                    }
+                }
+                "room_name_changed" -> {
+                    if (event.newName != null) {
+                        _roomState.update { state ->
+                            state.copy(roomName = event.newName)
+                        }
+                    }
+                }
             }
         } catch (e: Exception) {
             Log.e("WebSocketClient", "Failed to parse WebSocket message: $text", e)
@@ -126,6 +157,11 @@ class WebSocketClient @Inject constructor(
 
     suspend fun sendTimerPause() {
         val event = WsEvent(type = "timer_pause")
+        session?.send(Frame.Text(json.encodeToString(event)))
+    }
+
+    suspend fun sendTimerUpdateDuration(seconds: Int) {
+        val event = WsEvent(type = "timer_update", durationSeconds = seconds)
         session?.send(Frame.Text(json.encodeToString(event)))
     }
 
