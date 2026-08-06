@@ -209,6 +209,11 @@ fun Route.roomRoutes(
                                 roomService.handleTimerUpdateDuration(code, userId, event.durationSeconds, event.mode)
                             }
                         }
+                        "task_update" -> {
+                            if (event.task != null && event.isTaskDone != null) {
+                                roomService.handleTaskUpdate(code, userId, event.task, event.isTaskDone)
+                            }
+                        }
                     }
                 }
             }

@@ -32,7 +32,7 @@ data class RoomLiveState(
     val remainingSeconds: Int = 0,
     val mode: String = "work"
 ) {
-    data class Member(val userId: String, val displayName: String)
+    data class Member(val userId: String, val displayName: String, val task: String ="", val isTaskDone: Boolean = false)
 
     // Helper property to check if the current user is the host
     val isHost: Boolean get() = hostId.isNotEmpty() && hostId == currentUserId
@@ -146,6 +146,21 @@ class WebSocketClient @Inject constructor(
                         }
                     }
                 }
+                // Add this case inside the when block in handleIncomingMessage
+                "task_update" -> {
+                    if (event.userId != null && event.task != null && event.isTaskDone != null) {
+                        _roomState.update { state ->
+                            val updatedMembers = state.members.map { member ->
+                                if (member.userId == event.userId) {
+                                    member.copy(task = event.task, isTaskDone = event.isTaskDone)
+                                } else {
+                                    member
+                                }
+                            }
+                            state.copy(members = updatedMembers)
+                        }
+                    }
+                }
             }
         } catch (e: Exception) {
             Log.e("WebSocketClient", "Failed to parse WebSocket message: $text", e)
@@ -164,6 +179,15 @@ class WebSocketClient @Inject constructor(
 
     suspend fun sendTimerUpdateDuration(seconds: Int, mode: String = "work") {
         val event = WsEvent(type = "timer_update", durationSeconds = seconds, mode = mode)
+        session?.send(Frame.Text(json.encodeToString(event)))
+    }
+
+    suspend fun sendTaskUpdate(task: String, isDone: Boolean) {
+        val event = WsEvent(
+            type = "task_update",
+            task = task,
+            isTaskDone = isDone
+        )
         session?.send(Frame.Text(json.encodeToString(event)))
     }
 

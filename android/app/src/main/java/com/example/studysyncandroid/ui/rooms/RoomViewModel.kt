@@ -142,6 +142,12 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    fun updateMyTask(task: String, isDone: Boolean) {
+        viewModelScope.launch {
+            webSocketClient.sendTaskUpdate(task, isDone)
+        }
+    }
+
     fun leaveRoom() {
         viewModelScope.launch {
             webSocketClient.disconnect()

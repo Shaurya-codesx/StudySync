@@ -25,10 +25,20 @@ data class HostChangedEvent(val type: String = "host_changed", val newHostId: St
 @Serializable
 data class RoomNameChangedEvent(val type: String = "room_name_changed", val newName: String)
 
+@Serializable
+data class TaskUpdatedEvent(
+    val type: String = "task_update",
+    val userId: String,
+    val task: String,
+    val isTaskDone: Boolean
+)
+
 private data class ConnectedMember(
     val userId: UUID,
     val displayName: String,
-    val session: DefaultWebSocketServerSession
+    val session: DefaultWebSocketServerSession,
+    var task: String = "",
+    var isTaskDone: Boolean = false
 )
 
 private class RoomState(var hostId: UUID) {
@@ -137,6 +147,24 @@ class RoomService {
             }
         }
         broadcastTimerSync(room)
+    }
+
+    // NEW: Handle a user updating their task or checking it off
+    suspend fun handleTaskUpdate(code: String, requestingUserId: UUID, task: String, isTaskDone: Boolean) {
+        val room = rooms[code] ?: return
+
+        // 1. Find the user and update their state in memory
+        val member = room.members[requestingUserId] ?: return
+        member.task = task
+        member.isTaskDone = isTaskDone
+
+        // 2. Broadcast the update to everyone in the room
+        val event = TaskUpdatedEvent(
+            userId = requestingUserId.toString(),
+            task = task,
+            isTaskDone = isTaskDone
+        )
+        broadcast(room, json.encodeToString(TaskUpdatedEvent.serializer(), event))
     }
 
     private fun currentRemaining(room: RoomState): Int {

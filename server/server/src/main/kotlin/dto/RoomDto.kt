@@ -43,5 +43,7 @@ data class RoomDetailsResponse(
 data class IncomingRoomEvent(
     val type: String,
     val durationSeconds: Int? = null,
-    val mode: String? = null
+    val mode: String? = null,
+    val task: String? = null,
+    val isTaskDone: Boolean? = null
 )

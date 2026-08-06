@@ -18,5 +18,7 @@ data class WsEvent(
     val newName: String? = null,
     // NEW: Field for timer_update (outgoing custom duration)
     val durationSeconds: Int? = null,
-    val mode: String? = null
+    val mode: String? = null,
+    val task: String? = null,
+    val isTaskDone: Boolean? = null
 )
