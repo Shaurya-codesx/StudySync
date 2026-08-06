@@ -1,4 +1,4 @@
-name: Ktor CI Pipeline
+name: Ktor CI pipeline V2
 
 on:
   push:
