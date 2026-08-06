@@ -249,6 +249,7 @@ private fun ActiveRoomContent(
                     },
                     supportingContent = {
 
+
                         if (isMe) {
                             // CURRENT USER: Editable Text Field & Checkbox
                             var taskInput by remember { mutableStateOf(member.task) }
