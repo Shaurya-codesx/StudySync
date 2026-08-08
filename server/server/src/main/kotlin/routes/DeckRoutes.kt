@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.util.UUID
 import com.example.dto.DeckCreateRequest
+import com.example.dto.UpdateDeckRequest
 import java.util.concurrent.ConcurrentHashMap
 import com.example.dto.GenerateDeckRequest
 import com.example.dto.GeneratedCardResponse
@@ -212,6 +213,42 @@ fun Route.deckRoutes(deckService: DeckService, aiService: AiService) {
 
                 val newDeck = deckService.createDeck(userId, request.title)
                 call.respond(HttpStatusCode.Created, newDeck)
+            }
+
+            // 5. Update a deck's folder
+            patch("{id}/folder") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+                val deckIdStr = call.parameters["id"]
+
+                if (userIdStr == null || deckIdStr == null) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing data"))
+                    return@patch
+                }
+
+                val userId = UUID.fromString(userIdStr)
+                val deckId = try {
+                    UUID.fromString(deckIdStr)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid Deck ID format"))
+                    return@patch
+                }
+
+                val request = try {
+                    call.receive<UpdateDeckRequest>()
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid JSON body"))
+                    return@patch
+                }
+
+                val folderId = request.folderId?.let { UUID.fromString(it) }
+
+                val updated = deckService.updateDeckFolder(deckId, userId, folderId)
+                if (updated) {
+                    call.respond(HttpStatusCode.OK, mapOf("success" to true))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Deck not found or access denied"))
+                }
             }
         }
     }

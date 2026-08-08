@@ -24,7 +24,13 @@ data class GenerateDeckResponse(
 @Serializable
 data class DeckSummaryResponse(
     val id: String,
+    val folderId: String? = null,
     val title: String,
     val cardCount: Int,
     val createdAt: String
+)
+
+@Serializable
+data class UpdateDeckRequest(
+    val folderId: String? = null
 )

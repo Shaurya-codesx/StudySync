@@ -28,4 +28,7 @@ interface DeckDao {
 
     @Query("DELETE FROM decks WHERE id = :deckId")
     suspend fun deleteDeckById(deckId: String)
+
+    @Query("UPDATE decks SET folderId = :folderId WHERE id = :deckId")
+    suspend fun updateDeckFolder(deckId: String, folderId: String?)
 }

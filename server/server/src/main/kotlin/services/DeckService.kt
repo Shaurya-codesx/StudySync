@@ -30,4 +30,9 @@ class DeckService {
         // Fetch it back so we can return the complete DeckResponse (with cardCount and createdAt)
         return deckRepository.getAllForUser(userId).first { it.id == newDeckId.toString() }
     }
+
+    // 5. Update a deck's folder
+    fun updateDeckFolder(deckId: UUID, userId: UUID, folderId: UUID?): Boolean {
+        return deckRepository.updateDeckFolder(deckId, userId, folderId)
+    }
 }

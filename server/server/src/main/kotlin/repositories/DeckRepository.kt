@@ -6,6 +6,7 @@ import com.example.models.Cards
 import com.example.models.Decks
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
@@ -16,12 +17,13 @@ class DeckRepository {
         val cardCount = Cards.id.count()
 
         Decks.join(Cards, JoinType.LEFT, additionalConstraint = { Decks.id eq Cards.deckId })
-            .slice(Decks.id, Decks.title, Decks.createdAt, cardCount)
+            .slice(Decks.id, Decks.folderId, Decks.title, Decks.createdAt, cardCount)
             .select { Decks.userId eq userId }
-            .groupBy(Decks.id, Decks.title, Decks.createdAt)
+            .groupBy(Decks.id, Decks.folderId, Decks.title, Decks.createdAt)
             .map {
                 DeckResponse(
                     id = it[Decks.id].toString(),
+                    folderId = it[Decks.folderId]?.toString(),
                     title = it[Decks.title],
                     cardCount = it[cardCount].toInt(),
                     createdAt = it[Decks.createdAt].toString()
@@ -57,5 +59,38 @@ class DeckRepository {
             it[Decks.sourceText] = null // Null for now, will be used in Phase 6
         }
         insertStatement[Decks.id]
+    }
+
+    // Update a deck's folder (only if the user owns the deck)
+    fun updateDeckFolder(deckId: UUID, userId: UUID, folderId: UUID?): Boolean = transaction {
+        val updatedCount = Decks.update({ (Decks.id eq deckId) and (Decks.userId eq userId) }) {
+            it[Decks.folderId] = folderId
+        }
+        updatedCount > 0
+    }
+
+    // Fetch decks by a specific folder_id (or where folder_id is null)
+    fun getByFolderIdAndUser(folderId: UUID?, userId: UUID): List<DeckResponse> = transaction {
+        val cardCount = Cards.id.count()
+
+        val condition = if (folderId == null) {
+            (Decks.userId eq userId) and (Decks.folderId.isNull())
+        } else {
+            (Decks.userId eq userId) and (Decks.folderId eq folderId)
+        }
+
+        Decks.join(Cards, JoinType.LEFT, additionalConstraint = { Decks.id eq Cards.deckId })
+            .slice(Decks.id, Decks.folderId, Decks.title, Decks.createdAt, cardCount)
+            .select { condition }
+            .groupBy(Decks.id, Decks.folderId, Decks.title, Decks.createdAt)
+            .map {
+                DeckResponse(
+                    id = it[Decks.id].toString(),
+                    folderId = it[Decks.folderId]?.toString(),
+                    title = it[Decks.title],
+                    cardCount = it[cardCount].toInt(),
+                    createdAt = it[Decks.createdAt].toString()
+                )
+            }
     }
 }

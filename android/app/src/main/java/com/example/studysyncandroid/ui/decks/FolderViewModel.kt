@@ -2,8 +2,8 @@ package com.example.studysyncandroid.ui.decks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.studysyncandroid.data.local.entities.DeckEntity
-import com.example.studysyncandroid.data.repository.DeckRepository
+import com.example.studysyncandroid.data.local.entities.FolderWithDecks
+import com.example.studysyncandroid.data.repository.FolderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,11 +14,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DeckListViewModel @Inject constructor(
-    private val deckRepository: DeckRepository
+class FolderViewModel @Inject constructor(
+    private val folderRepository: FolderRepository
 ) : ViewModel() {
 
-    val decks: StateFlow<List<DeckEntity>> = deckRepository.getDecksStream()
+    val foldersWithDecks: StateFlow<List<FolderWithDecks>> = folderRepository.getFoldersWithDecksStream()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -28,9 +28,6 @@ class DeckListViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
-
     init {
         refresh()
     }
@@ -38,23 +35,20 @@ class DeckListViewModel @Inject constructor(
     fun refresh() {
         _isRefreshing.value = true
         viewModelScope.launch {
-            deckRepository.refreshDecks()
-                .onFailure { _errorMessage.value = it.message ?: "Failed to refresh decks" }
+            folderRepository.refreshFolders()
             _isRefreshing.value = false
         }
     }
 
-    fun moveDeckToFolder(deckId: String, folderId: String?) {
+    fun createFolder(name: String) {
         viewModelScope.launch {
-            deckRepository.moveDeckToFolder(deckId, folderId)
-                .onFailure { _errorMessage.value = it.message ?: "Failed to move deck" }
+            folderRepository.createFolder(name)
         }
     }
 
-    fun deleteDeck(deckId: String) {
+    fun deleteFolder(id: String) {
         viewModelScope.launch {
-            deckRepository.deleteDeck(deckId)
-                .onFailure { _errorMessage.value = it.message ?: "Failed to delete deck" }
+            folderRepository.deleteFolder(id)
         }
     }
 }

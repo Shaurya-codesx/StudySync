@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.studysyncandroid.data.local.AppDatabase
 import com.example.studysyncandroid.data.local.dao.CardDao
 import com.example.studysyncandroid.data.local.dao.DeckDao
+import com.example.studysyncandroid.data.local.dao.FolderDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,4 +29,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCardDao(database: AppDatabase): CardDao = database.cardDao()
+
+    @Provides
+    fun provideFolderDao(database: AppDatabase): FolderDao = database.folderDao()
 }

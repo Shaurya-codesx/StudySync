@@ -3,9 +3,11 @@ package com.example
 import com.example.repositories.CardRepository
 import com.example.repositories.RoomRepository
 import com.example.repositories.UserRepository
+import com.example.repositories.FolderRepository
 import com.example.routes.authRoutes
 import com.example.routes.cardRoutes
 import com.example.routes.deckRoutes
+import com.example.routes.folderRoutes
 import com.example.routes.healthRoutes
 import com.example.routes.roomRoutes
 import com.example.services.AiService
@@ -27,6 +29,7 @@ fun Application.configureRouting() {
     val roomRepository = RoomRepository()
     val roomService = RoomService()
     val userRepository = UserRepository()
+    val folderRepository = FolderRepository()
 
     routing {
         // 2. Existing active routes
@@ -37,6 +40,7 @@ fun Application.configureRouting() {
         deckRoutes(deckService, aiService)
         cardRoutes(cardRepository, cardService)
         roomRoutes(roomRepository, roomService, userRepository)
+        folderRoutes(folderRepository)
 
         get("/") {
             call.respondText("Hello, World!")

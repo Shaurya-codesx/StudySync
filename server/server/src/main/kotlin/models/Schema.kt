@@ -1,6 +1,7 @@
 package com.example.models
 
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
@@ -15,10 +16,21 @@ object Users : Table("users") {
     override val primaryKey = PrimaryKey(id)
 }
 
-// 2. Decks Table
+// 2. Folders Table
+object Folders : Table("folders") {
+    val id = uuid("id").autoGenerate()
+    val userId = uuid("user_id").references(Users.id)
+    val name = text("name")
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+// 3. Decks Table
 object Decks : Table("decks") {
     val id = uuid("id").autoGenerate()
     val userId = uuid("user_id").references(Users.id)
+    val folderId = uuid("folder_id").references(Folders.id, onDelete = ReferenceOption.CASCADE).nullable()
     val title = text("title")
     val sourceText = text("source_text").nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
@@ -29,7 +41,7 @@ object Decks : Table("decks") {
 // 3. Cards Table
 object Cards : Table("cards") {
     val id = uuid("id").autoGenerate()
-    val deckId = uuid("deck_id").references(Decks.id)
+    val deckId = uuid("deck_id").references(Decks.id, onDelete = ReferenceOption.CASCADE)
     val question = text("question")
     val answer = text("answer")
     val easeFactor = float("ease_factor").default(2.5f)
@@ -44,7 +56,7 @@ object Cards : Table("cards") {
 // 4. Review Logs Table
 object ReviewLogs : Table("review_logs") {
     val id = uuid("id").autoGenerate()
-    val cardId = uuid("card_id").references(Cards.id)
+    val cardId = uuid("card_id").references(Cards.id, onDelete = ReferenceOption.CASCADE)
     val quality = integer("quality")
     val reviewedAt = datetime("reviewed_at").defaultExpression(CurrentDateTime)
 

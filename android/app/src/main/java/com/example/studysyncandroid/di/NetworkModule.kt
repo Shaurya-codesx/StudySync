@@ -24,6 +24,7 @@ import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.encodedPath
+import com.example.studysyncandroid.data.remote.FolderApi
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
@@ -99,4 +100,8 @@ object NetworkModule {
             url(BASE_URL)
         }
     }
+
+    @Provides
+    @Singleton
+    fun provideFolderApi(client: HttpClient): FolderApi = FolderApi(client)
 }

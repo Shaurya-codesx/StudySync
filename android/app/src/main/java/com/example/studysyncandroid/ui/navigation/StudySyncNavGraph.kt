@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.example.studysyncandroid.ui.auth.LoginScreen
 import com.example.studysyncandroid.ui.auth.SignupScreen
 import com.example.studysyncandroid.ui.decks.DeckListScreen
+import com.example.studysyncandroid.ui.decks.FolderDecksScreen
 import com.example.studysyncandroid.ui.decks.GenerateDeckScreen
 import com.example.studysyncandroid.ui.review.ReviewScreen
 import com.example.studysyncandroid.ui.rooms.RoomsScreen
@@ -47,6 +48,7 @@ fun StudySyncNavGraph(
         composable(Screen.DeckList.route) {
             DeckListScreen(
                 onDeckClick = { deckId -> navController.navigate(Screen.Review.createRoute(deckId)) },
+                onFolderClick = { folderId -> navController.navigate(Screen.FolderDecks.createRoute(folderId)) },
                 onGenerateDeckClick = { navController.navigate(Screen.GenerateDeck.route) },
                 onRoomsClick = { navController.navigate(Screen.Rooms.route) },
                 onLogout = {
@@ -73,6 +75,18 @@ fun StudySyncNavGraph(
 
         composable(Screen.Rooms.route) {
             RoomsScreen()
+        }
+
+        composable(
+            route = Screen.FolderDecks.route,
+            arguments = listOf(navArgument("folderId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val folderId = backStackEntry.arguments?.getString("folderId").orEmpty()
+            FolderDecksScreen(
+                folderId = folderId,
+                onBack = { navController.popBackStack() },
+                onDeckClick = { deckId -> navController.navigate(Screen.Review.createRoute(deckId)) }
+            )
         }
     }
 }
