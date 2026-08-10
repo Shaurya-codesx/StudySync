@@ -27,7 +27,16 @@ data class DeckSummaryResponse(
     val folderId: String? = null,
     val title: String,
     val cardCount: Int,
+    val isPublic: Boolean = false,
     val createdAt: String
+)
+
+@Serializable
+data class PaginatedResponse<T>(
+    val items: List<T>,
+    val page: Int,
+    val totalPages: Int,
+    val totalItems: Long
 )
 
 @Serializable

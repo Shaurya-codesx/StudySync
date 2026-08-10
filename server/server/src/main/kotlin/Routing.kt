@@ -8,6 +8,7 @@ import com.example.routes.authRoutes
 import com.example.routes.cardRoutes
 import com.example.routes.deckRoutes
 import com.example.routes.folderRoutes
+import com.example.routes.marketplaceRoutes
 import com.example.routes.healthRoutes
 import com.example.routes.roomRoutes
 import com.example.services.AiService
@@ -41,6 +42,7 @@ fun Application.configureRouting() {
         cardRoutes(cardRepository, cardService)
         roomRoutes(roomRepository, roomService, userRepository)
         folderRoutes(folderRepository)
+        marketplaceRoutes(deckService)
 
         get("/") {
             call.respondText("Hello, World!")

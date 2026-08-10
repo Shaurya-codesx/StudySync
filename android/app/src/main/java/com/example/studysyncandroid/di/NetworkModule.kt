@@ -104,4 +104,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideFolderApi(client: HttpClient): FolderApi = FolderApi(client)
+
+    @Provides
+    @Singleton
+    fun provideMarketplaceApi(client: HttpClient): com.example.studysyncandroid.data.remote.MarketplaceApi = com.example.studysyncandroid.data.remote.MarketplaceApi(client)
 }

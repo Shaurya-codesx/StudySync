@@ -35,4 +35,24 @@ class DeckService {
     fun updateDeckFolder(deckId: UUID, userId: UUID, folderId: UUID?): Boolean {
         return deckRepository.updateDeckFolder(deckId, userId, folderId)
     }
+
+    // 6. Publish a deck
+    fun publishDeck(deckId: UUID, userId: UUID): Boolean {
+        return deckRepository.publishDeck(deckId, userId)
+    }
+
+    // 7. Unpublish a deck
+    fun unpublishDeck(deckId: UUID, userId: UUID): Boolean {
+        return deckRepository.unpublishDeck(deckId, userId)
+    }
+
+    // 8. Get public decks
+    fun getPublicDecks(userId: UUID, page: Int, limit: Int): com.example.dto.PaginatedResponse<DeckResponse> {
+        return deckRepository.getPublicDecks(userId, page, limit)
+    }
+
+    // 8. Clone a public deck
+    fun clonePublicDeck(deckId: UUID, newUserId: UUID): DeckResponse {
+        return deckRepository.clonePublicDeck(deckId, newUserId)
+    }
 }

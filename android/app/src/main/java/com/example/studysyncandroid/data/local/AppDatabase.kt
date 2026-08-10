@@ -11,7 +11,7 @@ import com.example.studysyncandroid.data.local.dao.FolderDao
 
 @Database(
     entities = [DeckEntity::class, CardEntity::class, FolderEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

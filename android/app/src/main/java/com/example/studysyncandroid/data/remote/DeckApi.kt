@@ -37,4 +37,12 @@ class DeckApi @Inject constructor(
     suspend fun deleteDeck(deckId: String) {
         client.delete("/decks/$deckId")
     }
+
+    suspend fun publishDeck(deckId: String) {
+        client.patch("/decks/$deckId/publish")
+    }
+
+    suspend fun unpublishDeck(deckId: String) {
+        client.patch("/decks/$deckId/unpublish")
+    }
 }

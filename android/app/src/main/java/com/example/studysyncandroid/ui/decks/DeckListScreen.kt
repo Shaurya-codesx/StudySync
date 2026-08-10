@@ -58,6 +58,7 @@ fun DeckListScreen(
     onFolderClick: (folderId: String) -> Unit,
     onGenerateDeckClick: () -> Unit,
     onRoomsClick: () -> Unit,
+    onMarketplaceClick: () -> Unit,
     onLogout: () -> Unit,
     deckListViewModel: DeckListViewModel = hiltViewModel(),
     folderViewModel: FolderViewModel = hiltViewModel(),
@@ -173,7 +174,9 @@ fun DeckListScreen(
                                         deck = deck, 
                                         onClick = { onDeckClick(deck.id) },
                                         onLongClick = { deckToDelete = deck },
-                                        onMoveToFolder = { deckId -> deckToMove = deckId }
+                                        onMoveToFolder = { deckId -> deckToMove = deckId },
+                                        onPublish = { deckId -> deckListViewModel.publishDeck(deckId) },
+                                        onUnpublish = { deckId -> deckListViewModel.unpublishDeck(deckId) }
                                     )
                                 }
                             }
@@ -189,7 +192,10 @@ fun DeckListScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 OutlinedButton(onClick = onRoomsClick) {
-                    Text("Go to Rooms")
+                    Text("Rooms")
+                }
+                OutlinedButton(onClick = onMarketplaceClick) {
+                    Text("Marketplace")
                 }
                 OutlinedButton(onClick = { authViewModel.logout(onComplete = onLogout) }) {
                     Text("Log Out")
@@ -360,7 +366,9 @@ private fun DeckCard(
     deck: DeckEntity, 
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onMoveToFolder: (String) -> Unit
+    onMoveToFolder: (String) -> Unit,
+    onPublish: (String) -> Unit,
+    onUnpublish: (String) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -403,6 +411,23 @@ private fun DeckCard(
                             onMoveToFolder(deck.id)
                         }
                     )
+                    if (deck.isPublic) {
+                        DropdownMenuItem(
+                            text = { Text("Make Deck Private") },
+                            onClick = {
+                                showMenu = false
+                                onUnpublish(deck.id)
+                            }
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text("Publish to Marketplace") },
+                            onClick = {
+                                showMenu = false
+                                onPublish(deck.id)
+                            }
+                        )
+                    }
                 }
             }
         }

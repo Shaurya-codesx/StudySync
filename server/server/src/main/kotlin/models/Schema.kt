@@ -33,6 +33,7 @@ object Decks : Table("decks") {
     val folderId = uuid("folder_id").references(Folders.id, onDelete = ReferenceOption.CASCADE).nullable()
     val title = text("title")
     val sourceText = text("source_text").nullable()
+    val isPublic = bool("is_public").default(false)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     override val primaryKey = PrimaryKey(id)

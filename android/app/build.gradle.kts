@@ -65,6 +65,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // Paging
+    implementation("androidx.paging:paging-runtime:3.3.0")
+    implementation("androidx.paging:paging-compose:3.3.0")
+
     // DataStore (token storage — used starting Phase 11)
     implementation(libs.androidx.datastore.preferences)
 

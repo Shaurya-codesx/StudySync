@@ -15,6 +15,7 @@ import com.example.studysyncandroid.ui.decks.FolderDecksScreen
 import com.example.studysyncandroid.ui.decks.GenerateDeckScreen
 import com.example.studysyncandroid.ui.review.ReviewScreen
 import com.example.studysyncandroid.ui.rooms.RoomsScreen
+import com.example.studysyncandroid.ui.marketplace.MarketplaceScreen
 
 @Composable
 fun StudySyncNavGraph(
@@ -51,6 +52,7 @@ fun StudySyncNavGraph(
                 onFolderClick = { folderId -> navController.navigate(Screen.FolderDecks.createRoute(folderId)) },
                 onGenerateDeckClick = { navController.navigate(Screen.GenerateDeck.route) },
                 onRoomsClick = { navController.navigate(Screen.Rooms.route) },
+                onMarketplaceClick = { navController.navigate(Screen.Marketplace.route) },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(navController.graph.id) { inclusive = true }
@@ -75,6 +77,10 @@ fun StudySyncNavGraph(
 
         composable(Screen.Rooms.route) {
             RoomsScreen()
+        }
+
+        composable(Screen.Marketplace.route) {
+            MarketplaceScreen()
         }
 
         composable(

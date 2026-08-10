@@ -57,4 +57,26 @@ class DeckListViewModel @Inject constructor(
                 .onFailure { _errorMessage.value = it.message ?: "Failed to delete deck" }
         }
     }
+
+    fun publishDeck(deckId: String) {
+        viewModelScope.launch {
+            deckRepository.publishDeck(deckId)
+                .onSuccess { 
+                    _errorMessage.value = "Deck published to Marketplace!" 
+                    refresh()
+                }
+                .onFailure { _errorMessage.value = it.message ?: "Failed to publish deck" }
+        }
+    }
+
+    fun unpublishDeck(deckId: String) {
+        viewModelScope.launch {
+            deckRepository.unpublishDeck(deckId)
+                .onSuccess { 
+                    _errorMessage.value = "Deck removed from Marketplace!" 
+                    refresh()
+                }
+                .onFailure { _errorMessage.value = it.message ?: "Failed to unpublish deck" }
+        }
+    }
 }

@@ -55,6 +55,7 @@ class DeckRepository @Inject constructor(
                     folderId = summary.folderId,
                     title = summary.title,
                     cardCount = summary.cardCount,
+                    isPublic = summary.isPublic,
                     createdAt = summary.createdAt
                 )
             }
@@ -77,5 +78,13 @@ class DeckRepository @Inject constructor(
     suspend fun deleteDeck(deckId: String): Result<Unit> = runCatching {
         deckApi.deleteDeck(deckId)
         deckDao.deleteDeckById(deckId)
+    }
+
+    suspend fun publishDeck(deckId: String): Result<Unit> = runCatching {
+        deckApi.publishDeck(deckId)
+    }
+
+    suspend fun unpublishDeck(deckId: String): Result<Unit> = runCatching {
+        deckApi.unpublishDeck(deckId)
     }
 }

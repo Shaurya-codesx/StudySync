@@ -22,5 +22,6 @@ data class DeckEntity(
     val folderId: String? = null,
     val title: String,
     val cardCount: Int,
+    val isPublic: Boolean = false,
     val createdAt: String
 )

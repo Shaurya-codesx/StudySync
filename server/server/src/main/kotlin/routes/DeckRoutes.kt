@@ -250,6 +250,60 @@ fun Route.deckRoutes(deckService: DeckService, aiService: AiService) {
                     call.respond(HttpStatusCode.NotFound, mapOf("error" to "Deck not found or access denied"))
                 }
             }
+
+            // 6. Publish a deck
+            patch("{id}/publish") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+                val deckIdStr = call.parameters["id"]
+
+                if (userIdStr == null || deckIdStr == null) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing data"))
+                    return@patch
+                }
+
+                val userId = UUID.fromString(userIdStr)
+                val deckId = try {
+                    UUID.fromString(deckIdStr)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid Deck ID format"))
+                    return@patch
+                }
+
+                val published = deckService.publishDeck(deckId, userId)
+                if (published) {
+                    call.respond(HttpStatusCode.OK, mapOf("success" to true))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Deck not found or access denied"))
+                }
+            }
+
+            // 7. Unpublish a deck
+            patch("{id}/unpublish") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+                val deckIdStr = call.parameters["id"]
+
+                if (userIdStr == null || deckIdStr == null) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing data"))
+                    return@patch
+                }
+
+                val userId = UUID.fromString(userIdStr)
+                val deckId = try {
+                    UUID.fromString(deckIdStr)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid Deck ID format"))
+                    return@patch
+                }
+
+                val unpublished = deckService.unpublishDeck(deckId, userId)
+                if (unpublished) {
+                    call.respond(HttpStatusCode.OK, mapOf("success" to true))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Deck not found or access denied"))
+                }
+            }
         }
     }
 }
