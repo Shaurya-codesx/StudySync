@@ -14,9 +14,12 @@ import com.example.studysyncandroid.ui.decks.DeckListScreen
 import com.example.studysyncandroid.ui.decks.FolderDecksScreen
 import com.example.studysyncandroid.ui.decks.GenerateDeckScreen
 import com.example.studysyncandroid.ui.review.ReviewScreen
+import com.example.studysyncandroid.ui.analytics.AnalyticsScreen
+import com.example.studysyncandroid.ui.analytics.AnalyticsDashboardScreen
+import com.example.studysyncandroid.ui.analytics.LibraryStatusScreen
+import com.example.studysyncandroid.ui.analytics.UpcomingReviewsScreen
 import com.example.studysyncandroid.ui.rooms.RoomsScreen
 import com.example.studysyncandroid.ui.marketplace.MarketplaceScreen
-import com.example.studysyncandroid.ui.analytics.AnalyticsScreen
 
 @Composable
 fun StudySyncNavGraph(
@@ -86,7 +89,28 @@ fun StudySyncNavGraph(
         }
 
         composable(Screen.Analytics.route) {
+            AnalyticsDashboardScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onRetentionCurveClick = { navController.navigate(Screen.RetentionCurve.route) },
+                onLibraryStatusClick = { navController.navigate(Screen.LibraryStatus.route) },
+                onUpcomingReviewsClick = { navController.navigate(Screen.UpcomingReviews.route) }
+            )
+        }
+
+        composable(Screen.RetentionCurve.route) {
             AnalyticsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.LibraryStatus.route) {
+            LibraryStatusScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.UpcomingReviews.route) {
+            UpcomingReviewsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

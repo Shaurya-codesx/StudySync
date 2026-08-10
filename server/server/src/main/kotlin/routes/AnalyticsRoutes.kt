@@ -32,6 +32,48 @@ fun Route.analyticsRoutes(analyticsService: AnalyticsService) {
                 val retentionCurve = analyticsService.getRetentionCurve(userId)
                 call.respond(HttpStatusCode.OK, retentionCurve)
             }
+
+            // GET /analytics/library-status
+            get("/library-status") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+
+                if (userIdStr == null) {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid token"))
+                    return@get
+                }
+
+                val userId = try {
+                    UUID.fromString(userIdStr)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid User ID format"))
+                    return@get
+                }
+
+                val libraryStatus = analyticsService.getLibraryStatus(userId)
+                call.respond(HttpStatusCode.OK, libraryStatus)
+            }
+
+            // GET /analytics/upcoming
+            get("/upcoming") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdStr = principal?.payload?.getClaim("userId")?.asString()
+
+                if (userIdStr == null) {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid token"))
+                    return@get
+                }
+
+                val userId = try {
+                    UUID.fromString(userIdStr)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid User ID format"))
+                    return@get
+                }
+
+                val upcomingReviews = analyticsService.getUpcomingReviews(userId)
+                call.respond(HttpStatusCode.OK, upcomingReviews)
+            }
         }
     }
 }

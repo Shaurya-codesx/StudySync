@@ -50,4 +50,78 @@ class AnalyticsRepository {
 
         results
     }
+
+    fun getLibraryStatus(userId: UUID): com.example.dto.LibraryStatusDto = transaction {
+        // Fetch repetitions and intervalDays for all cards belonging to the user
+        val cards = (Cards innerJoin Decks)
+            .slice(Cards.repetitions, Cards.intervalDays)
+            .select { Decks.userId eq userId }
+            .toList()
+
+        var newCards = 0
+        var learningCards = 0
+        var matureCards = 0
+
+        for (card in cards) {
+            val repetitions = card[Cards.repetitions]
+            val intervalDays = card[Cards.intervalDays]
+
+            when {
+                repetitions == 0 -> newCards++
+                intervalDays >= 21 -> matureCards++
+                else -> learningCards++
+            }
+        }
+
+        com.example.dto.LibraryStatusDto(
+            newCards = newCards,
+            learningCards = learningCards,
+            matureCards = matureCards,
+            totalCards = cards.size
+        )
+    }
+
+    fun getUpcomingReviews(userId: UUID): List<com.example.dto.UpcomingReviewDto> = transaction {
+        val todayObj = LocalDate.now()
+        val cutoffDate = todayObj.plusDays(10)
+        val cutoffDateTime = cutoffDate.atStartOfDay()
+
+        // Fetch dueDate for all cards belonging to the user that are due before the cutoff
+        val cards = (Cards innerJoin Decks)
+            .slice(Cards.dueDate)
+            .select { (Decks.userId eq userId) and (Cards.dueDate less cutoffDateTime) }
+            .toList()
+
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+        
+        // Initialize 10-day buckets
+        val buckets = mutableMapOf<String, Int>()
+        for (i in 0L..9L) {
+            buckets[todayObj.plusDays(i).format(formatter)] = 0
+        }
+
+        val todayStr = todayObj.format(formatter)
+
+        for (card in cards) {
+            val dueDate = card[Cards.dueDate].toLocalDate()
+            val dueDateStr = dueDate.format(formatter)
+
+            if (dueDate.isBefore(todayObj) || dueDate.isEqual(todayObj)) {
+                // Overdue or due today
+                buckets[todayStr] = buckets.getOrDefault(todayStr, 0) + 1
+            } else if (buckets.containsKey(dueDateStr)) {
+                // Due in the future (within the 10-day window)
+                buckets[dueDateStr] = buckets.getOrDefault(dueDateStr, 0) + 1
+            }
+        }
+
+        // Convert back to sorted list of DTOs
+        val results = mutableListOf<com.example.dto.UpcomingReviewDto>()
+        for (i in 0L..9L) {
+            val dateStr = todayObj.plusDays(i).format(formatter)
+            results.add(com.example.dto.UpcomingReviewDto(date = dateStr, cardsDue = buckets[dateStr] ?: 0))
+        }
+
+        results
+    }
 }

@@ -10,4 +10,12 @@ class AnalyticsRepository @Inject constructor(
     suspend fun getRetentionCurve(): Result<List<DailyRetentionDto>> = runCatching {
         analyticsApi.getRetentionCurve()
     }
+
+    suspend fun getLibraryStatus(): Result<com.example.studysyncandroid.data.remote.dto.LibraryStatusDto> = runCatching {
+        analyticsApi.getLibraryStatus()
+    }
+
+    suspend fun getUpcomingReviews(): Result<List<com.example.studysyncandroid.data.remote.dto.UpcomingReviewDto>> = runCatching {
+        analyticsApi.getUpcomingReviews()
+    }
 }
