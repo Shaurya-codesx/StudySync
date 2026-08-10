@@ -11,6 +11,7 @@ import com.example.routes.folderRoutes
 import com.example.routes.marketplaceRoutes
 import com.example.routes.healthRoutes
 import com.example.routes.roomRoutes
+import com.example.routes.analyticsRoutes
 import com.example.services.AiService
 import com.example.services.CardService
 import com.example.services.DeckService
@@ -31,6 +32,8 @@ fun Application.configureRouting() {
     val roomService = RoomService()
     val userRepository = UserRepository()
     val folderRepository = FolderRepository()
+    val analyticsRepository = com.example.repositories.AnalyticsRepository()
+    val analyticsService = com.example.services.AnalyticsService(analyticsRepository)
 
     routing {
         // 2. Existing active routes
@@ -43,6 +46,7 @@ fun Application.configureRouting() {
         roomRoutes(roomRepository, roomService, userRepository)
         folderRoutes(folderRepository)
         marketplaceRoutes(deckService)
+        analyticsRoutes(analyticsService)
 
         get("/") {
             call.respondText("Hello, World!")

@@ -108,4 +108,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideMarketplaceApi(client: HttpClient): com.example.studysyncandroid.data.remote.MarketplaceApi = com.example.studysyncandroid.data.remote.MarketplaceApi(client)
+
+    @Provides
+    @Singleton
+    fun provideAnalyticsApi(client: HttpClient): com.example.studysyncandroid.data.remote.AnalyticsApi = com.example.studysyncandroid.data.remote.AnalyticsApi(client)
 }

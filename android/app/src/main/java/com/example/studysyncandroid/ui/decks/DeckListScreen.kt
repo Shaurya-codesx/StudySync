@@ -59,6 +59,7 @@ fun DeckListScreen(
     onGenerateDeckClick: () -> Unit,
     onRoomsClick: () -> Unit,
     onMarketplaceClick: () -> Unit,
+    onAnalyticsClick: () -> Unit,
     onLogout: () -> Unit,
     deckListViewModel: DeckListViewModel = hiltViewModel(),
     folderViewModel: FolderViewModel = hiltViewModel(),
@@ -197,6 +198,16 @@ fun DeckListScreen(
                 OutlinedButton(onClick = onMarketplaceClick) {
                     Text("Marketplace")
                 }
+                OutlinedButton(onClick = onAnalyticsClick) {
+                    Text("Analytics")
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
                 OutlinedButton(onClick = { authViewModel.logout(onComplete = onLogout) }) {
                     Text("Log Out")
                 }

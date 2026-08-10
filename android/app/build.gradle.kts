@@ -72,6 +72,11 @@ dependencies {
     // DataStore (token storage — used starting Phase 11)
     implementation(libs.androidx.datastore.preferences)
 
+    // Vico Graphing
+    implementation("com.patrykandpatrick.vico:compose:1.16.0")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.16.0")
+    implementation("com.patrykandpatrick.vico:core:1.16.0")
+
     // Ktor client (REST + WebSocket)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)

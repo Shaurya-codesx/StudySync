@@ -13,4 +13,5 @@ sealed class Screen(val route: String) {
         fun createRoute(folderId: String) = "folder_decks/$folderId"
     }
     data object Marketplace : Screen("marketplace")
+    data object Analytics : Screen("analytics")
 }
