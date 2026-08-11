@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,14 +57,9 @@ import com.example.studysyncandroid.ui.auth.AuthViewModel
 fun DeckListScreen(
     onDeckClick: (deckId: String) -> Unit,
     onFolderClick: (folderId: String) -> Unit,
-    onGenerateDeckClick: () -> Unit,
-    onRoomsClick: () -> Unit,
-    onMarketplaceClick: () -> Unit,
-    onAnalyticsClick: () -> Unit,
-    onLogout: () -> Unit,
+    onProfileClick: () -> Unit,
     deckListViewModel: DeckListViewModel = hiltViewModel(),
-    folderViewModel: FolderViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel()
+    folderViewModel: FolderViewModel = hiltViewModel()
 ) {
     val decks by deckListViewModel.decks.collectAsStateWithLifecycle()
     val isRefreshingDecks by deckListViewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -72,9 +68,6 @@ fun DeckListScreen(
     val isRefreshingFolders by folderViewModel.isRefreshing.collectAsStateWithLifecycle()
 
     val isRefreshing = isRefreshingDecks || isRefreshingFolders
-
-    var showFabMenu by remember { mutableStateOf(false) }
-    var showCreateFolderDialog by remember { mutableStateOf(false) }
     
     var deckToMove by remember { mutableStateOf<String?>(null) }
     var deckToDelete by remember { mutableStateOf<DeckEntity?>(null) }
@@ -85,6 +78,9 @@ fun DeckListScreen(
             TopAppBar(
                 title = { Text("Your Decks") },
                 actions = {
+                    IconButton(onClick = onProfileClick) {
+                        Icon(Icons.Default.Person, contentDescription = "Profile")
+                    }
                     TextButton(onClick = { 
                         deckListViewModel.refresh() 
                         folderViewModel.refresh()
@@ -93,32 +89,6 @@ fun DeckListScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            Box {
-                FloatingActionButton(onClick = { showFabMenu = !showFabMenu }) {
-                    Text("+", style = MaterialTheme.typography.headlineSmall)
-                }
-                DropdownMenu(
-                    expanded = showFabMenu,
-                    onDismissRequest = { showFabMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Create Deck") },
-                        onClick = {
-                            showFabMenu = false
-                            onGenerateDeckClick()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Create Folder") },
-                        onClick = {
-                            showFabMenu = false
-                            showCreateFolderDialog = true
-                        }
-                    )
-                }
-            }
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -186,65 +156,6 @@ fun DeckListScreen(
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OutlinedButton(onClick = onRoomsClick) {
-                    Text("Rooms")
-                }
-                OutlinedButton(onClick = onMarketplaceClick) {
-                    Text("Marketplace")
-                }
-                OutlinedButton(onClick = onAnalyticsClick) {
-                    Text("Analytics")
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                OutlinedButton(onClick = { authViewModel.logout(onComplete = onLogout) }) {
-                    Text("Log Out")
-                }
-            }
-        }
-        
-        if (showCreateFolderDialog) {
-            var folderName by remember { mutableStateOf("") }
-            AlertDialog(
-                onDismissRequest = { showCreateFolderDialog = false },
-                title = { Text("Create Folder") },
-                text = {
-                    OutlinedTextField(
-                        value = folderName,
-                        onValueChange = { folderName = it },
-                        label = { Text("Folder Name") },
-                        singleLine = true
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            if (folderName.isNotBlank()) {
-                                folderViewModel.createFolder(folderName)
-                                showCreateFolderDialog = false
-                            }
-                        }
-                    ) {
-                        Text("Create")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showCreateFolderDialog = false }) {
-                        Text("Cancel")
-                    }
-                }
-            )
         }
 
         if (deckToMove != null) {
