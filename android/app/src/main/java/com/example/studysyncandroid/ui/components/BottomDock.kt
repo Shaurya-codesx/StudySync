@@ -24,7 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.example.studysyncandroid.R
 
 @Composable
 fun BottomDock(
@@ -34,6 +36,10 @@ fun BottomDock(
     onCreateFolderClick: () -> Unit
 ) {
     var showPlusMenu by remember { mutableStateOf(false) }
+
+    val textPrimary = colorResource(id = R.color.deck_list_text_primary)
+    val textSecondary = colorResource(id = R.color.deck_list_text_secondary)
+    val cardBg = colorResource(id = R.color.deck_list_card_bg)
 
     Box(
         modifier = Modifier
@@ -51,6 +57,7 @@ fun BottomDock(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
                 modifier = Modifier.width(200.dp)
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
@@ -61,7 +68,7 @@ fun BottomDock(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Create Deck")
+                        Text("Create Deck", color = textPrimary)
                     }
                     TextButton(
                         onClick = {
@@ -70,7 +77,7 @@ fun BottomDock(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Create Folder")
+                        Text("Create Folder", color = textPrimary)
                     }
                 }
             }
@@ -79,7 +86,7 @@ fun BottomDock(
         // The Dock
         Surface(
             shape = RoundedCornerShape(32.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
+            color = Color(0xFFE8E9EC), // A very soft blueish-grey to match the screenshot
             shadowElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,8 +99,9 @@ fun BottomDock(
             ) {
                 DockItem(
                     icon = Icons.Default.Home,
-                    label = "Home",
                     isSelected = currentRoute == "deck_list",
+                    selectedColor = textPrimary,
+                    unselectedColor = textSecondary,
                     onClick = {
                         showPlusMenu = false
                         onNavigate("deck_list")
@@ -102,8 +110,9 @@ fun BottomDock(
                 
                 DockItem(
                     icon = Icons.Default.Store,
-                    label = "Market",
                     isSelected = currentRoute == "marketplace",
+                    selectedColor = textPrimary,
+                    unselectedColor = textSecondary,
                     onClick = {
                         showPlusMenu = false
                         onNavigate("marketplace")
@@ -115,21 +124,22 @@ fun BottomDock(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(if (showPlusMenu) textSecondary else textPrimary)
                         .clickable { showPlusMenu = !showPlusMenu },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add",
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = colorResource(id = R.color.deck_list_bg)
                     )
                 }
 
                 DockItem(
                     icon = Icons.Default.Group,
-                    label = "Rooms",
                     isSelected = currentRoute == "rooms",
+                    selectedColor = textPrimary,
+                    unselectedColor = textSecondary,
                     onClick = {
                         showPlusMenu = false
                         onNavigate("rooms")
@@ -138,8 +148,9 @@ fun BottomDock(
 
                 DockItem(
                     icon = Icons.Default.Analytics,
-                    label = "Analytics",
                     isSelected = currentRoute == "analytics",
+                    selectedColor = textPrimary,
+                    unselectedColor = textSecondary,
                     onClick = {
                         showPlusMenu = false
                         onNavigate("analytics")
@@ -153,22 +164,23 @@ fun BottomDock(
 @Composable
 fun DockItem(
     icon: ImageVector,
-    label: String,
     isSelected: Boolean,
+    selectedColor: Color,
+    unselectedColor: Color,
     onClick: () -> Unit
 ) {
-    val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-    Column(
+    val tint = if (isSelected) selectedColor else unselectedColor
+    Box(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = label,
+            contentDescription = null,
             tint = tint,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(28.dp)
         )
     }
 }

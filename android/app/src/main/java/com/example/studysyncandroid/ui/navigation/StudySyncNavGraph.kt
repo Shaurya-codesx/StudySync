@@ -58,7 +58,15 @@ fun StudySyncNavGraph(
 
     val deckListBgColor = colorResource(id = R.color.deck_list_bg)
     val bgColor = when {
-        currentRoute == Screen.DeckList.route || currentRoute?.startsWith("folder_decks") == true || currentRoute == Screen.Rooms.route -> deckListBgColor
+        currentRoute == Screen.DeckList.route || 
+        currentRoute?.startsWith("folder_decks") == true || 
+        currentRoute == Screen.Rooms.route ||
+        currentRoute == Screen.Marketplace.route ||
+        currentRoute == Screen.GenerateDeck.route ||
+        currentRoute == Screen.Analytics.route ||
+        currentRoute == Screen.RetentionCurve.route ||
+        currentRoute == Screen.LibraryStatus.route ||
+        currentRoute == Screen.UpcomingReviews.route -> deckListBgColor
         else -> MaterialTheme.colorScheme.background
     }
 
@@ -120,7 +128,8 @@ fun StudySyncNavGraph(
 
             composable(Screen.GenerateDeck.route) {
                 GenerateDeckScreen(
-                    onDeckGenerated = { navController.popBackStack() }
+                    onDeckGenerated = { navController.popBackStack() },
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
@@ -137,7 +146,9 @@ fun StudySyncNavGraph(
             }
 
             composable(Screen.Marketplace.route) {
-                MarketplaceScreen()
+                MarketplaceScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.Analytics.route) {
