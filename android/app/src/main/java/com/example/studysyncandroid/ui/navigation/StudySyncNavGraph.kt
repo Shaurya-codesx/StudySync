@@ -13,12 +13,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.res.colorResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.studysyncandroid.R
 import com.example.studysyncandroid.ui.auth.LoginScreen
 import com.example.studysyncandroid.ui.auth.SignupScreen
 import com.example.studysyncandroid.ui.decks.DeckListScreen
@@ -54,7 +56,8 @@ fun StudySyncNavGraph(
 
     var showCreateFolderDialog by remember { mutableStateOf(false) }
 
-    val bgColor = if (currentRoute == Screen.DeckList.route) Color(0xFFF3EBE0) else MaterialTheme.colorScheme.background
+    val deckListBgColor = colorResource(id = R.color.deck_list_bg)
+    val bgColor = if (currentRoute == Screen.DeckList.route || currentRoute?.startsWith("folder_decks") == true) deckListBgColor else MaterialTheme.colorScheme.background
 
     Scaffold(
         containerColor = bgColor,

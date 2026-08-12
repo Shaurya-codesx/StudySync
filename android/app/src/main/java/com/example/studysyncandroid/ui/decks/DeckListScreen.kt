@@ -96,14 +96,14 @@ fun DeckListScreen(
     var folderToDelete by remember { mutableStateOf<FolderWithDecks?>(null) }
 
     // ---- Palette ----------------------------------------------------
-    val bg = Color(0xFFF3EBE0)
-    val cardBg = Color(0xFFFDFBF7)
-    val textPrimary = Color(0xFF2C3E50)
-    val textSecondary = Color(0xFF8A7E73)
-    val dividerColor = Color(0xFFD49A9A)
-    val borderColor = Color(0xFFE5D5C5)
-    val error = Color(0xFFE57373)
-    val accent = Color(0xFF8D6E63)
+    val bg = colorResource(id = R.color.deck_list_bg)
+    val cardBg = colorResource(id = R.color.deck_list_card_bg)
+    val textPrimary = colorResource(id = R.color.deck_list_text_primary)
+    val textSecondary = colorResource(id = R.color.deck_list_text_secondary)
+    val dividerColor = colorResource(id = R.color.deck_list_divider)
+    val borderColor = colorResource(id = R.color.deck_list_border)
+    val error = colorResource(id = R.color.deck_list_error)
+    val accent = colorResource(id = R.color.deck_list_accent)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
