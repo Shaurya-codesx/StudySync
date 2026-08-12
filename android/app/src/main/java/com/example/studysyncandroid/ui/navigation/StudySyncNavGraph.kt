@@ -57,7 +57,10 @@ fun StudySyncNavGraph(
     var showCreateFolderDialog by remember { mutableStateOf(false) }
 
     val deckListBgColor = colorResource(id = R.color.deck_list_bg)
-    val bgColor = if (currentRoute == Screen.DeckList.route || currentRoute?.startsWith("folder_decks") == true) deckListBgColor else MaterialTheme.colorScheme.background
+    val bgColor = when {
+        currentRoute == Screen.DeckList.route || currentRoute?.startsWith("folder_decks") == true || currentRoute == Screen.Rooms.route -> deckListBgColor
+        else -> MaterialTheme.colorScheme.background
+    }
 
     Scaffold(
         containerColor = bgColor,

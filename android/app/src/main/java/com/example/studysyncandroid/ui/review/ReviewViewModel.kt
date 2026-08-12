@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.studysyncandroid.data.local.entities.CardEntity
 import com.example.studysyncandroid.data.repository.CardRepository
+import com.example.studysyncandroid.data.repository.DeckRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +16,7 @@ import javax.inject.Inject
 
 data class ReviewUiState(
     val isLoading: Boolean = true,
+    val deckTitle: String? = null,
     val dueCards: List<CardEntity> = emptyList(),
     val currentCardIndex: Int = 0,
     val isAnswerRevealed: Boolean = false,
@@ -31,7 +34,8 @@ data class ReviewUiState(
 
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
-    private val cardRepository: CardRepository
+    private val cardRepository: CardRepository,
+    private val deckRepository: DeckRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReviewUiState())
@@ -42,11 +46,14 @@ class ReviewViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Fetch only the cards where due_date <= now
+                // Fetch the deck to get its title
+                val deckTitle = deckRepository.getDecksStream().firstOrNull()?.find { it.id == deckId }?.title
+                    ?: "Review"
                 val cards = cardRepository.getDueCards(deckId)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
+                        deckTitle = deckTitle,
                         dueCards = cards,
                         currentCardIndex = 0,
                         isAnswerRevealed = false
