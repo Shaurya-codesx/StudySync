@@ -19,9 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             StudySyncAndroidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    StudySyncApp(modifier = Modifier.padding(innerPadding))
-                }
+                StudySyncApp(modifier = Modifier.fillMaxSize())
             }
         }
     }

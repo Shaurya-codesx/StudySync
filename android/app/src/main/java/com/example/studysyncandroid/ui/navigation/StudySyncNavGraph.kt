@@ -11,6 +11,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,7 +54,10 @@ fun StudySyncNavGraph(
 
     var showCreateFolderDialog by remember { mutableStateOf(false) }
 
+    val bgColor = if (currentRoute == Screen.DeckList.route) Color(0xFFF3EBE0) else MaterialTheme.colorScheme.background
+
     Scaffold(
+        containerColor = bgColor,
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
                 BottomDock(

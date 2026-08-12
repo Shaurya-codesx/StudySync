@@ -7,4 +7,14 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="nordic_background">#FDFBF7</color>
+    <color name="nordic_surface">#F5F2EB</color>
+    <color name="nordic_surface_raised">#EDE8DD</color>
+    <color name="nordic_text_primary">#333333</color>
+    <color name="nordic_text_secondary">#8A8580</color>
+    <color name="nordic_accent">#7A8B99</color>
+    <color name="nordic_accent_deep">#5F7280</color>
+    <color name="nordic_on_accent">#FDFBF7</color>
+    <color name="nordic_error">#B5695A</color>
+
 </resources>
