@@ -32,3 +32,31 @@ data class AuthResponse(
 data class RefreshRequest(
     val refreshToken: String
 )
+
+@Serializable
+data class VerifyEmailRequest(
+    val email: String,
+    val otp: String
+)
+
+@Serializable
+data class ResendVerificationRequest(
+    val email: String
+)
+
+@Serializable
+data class ForgotPasswordRequest(
+    val email: String
+)
+
+@Serializable
+data class ResetPasswordRequest(
+    val email: String,
+    val otp: String,
+    val newPassword: String
+)
+
+@Serializable
+data class MessageResponse(
+    val message: String
+)

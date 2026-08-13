@@ -20,7 +20,7 @@ fun Application.configureDatabase() {
 
     // Run a transaction to create the tables in PostgreSQL if they don't exist yet
     transaction(database) {
-        SchemaUtils.create(Users, Decks, Cards, ReviewLogs, StudyRooms, RoomMembers)
+        SchemaUtils.create(Users, Otps, Folders, Decks, Cards, ReviewLogs, StudyRooms, RoomMembers)
     }
 
     println("======================Successfully+++++++ connected_____ to&&&&&&&&&& the database and generated tables!!!!!!!!!!!!!")

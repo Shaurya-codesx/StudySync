@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.studysyncandroid.util.toUserFriendlyMessage
 
 data class ReviewUiState(
     val isLoading: Boolean = true,
@@ -61,7 +62,7 @@ class ReviewViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, error = "Failed to load cards.")
+                    it.copy(isLoading = false, error = e.toUserFriendlyMessage())
                 }
             }
         }

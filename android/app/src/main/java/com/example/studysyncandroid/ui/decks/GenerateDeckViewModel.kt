@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.studysyncandroid.util.toUserFriendlyMessage
 
 sealed interface GenerateDeckUiState {
     data object Idle : GenerateDeckUiState
@@ -30,7 +31,7 @@ class GenerateDeckViewModel @Inject constructor(
         viewModelScope.launch {
             deckRepository.generateDeck(sourceText)
                 .onSuccess { deckId -> _uiState.value = GenerateDeckUiState.Success(deckId) }
-                .onFailure { _uiState.value = GenerateDeckUiState.Error(it.message ?: "Failed to generate deck") }
+                .onFailure { _uiState.value = GenerateDeckUiState.Error(it.toUserFriendlyMessage()) }
         }
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.AlertDialog
@@ -358,11 +359,22 @@ private fun StackedDeckCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = "${deck.cardCount} cards",
-                        fontSize = 12.sp,
-                        color = textSecondary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "${deck.cardCount} cards",
+                            fontSize = 12.sp,
+                            color = textSecondary
+                        )
+                        if (deck.isPublic) {
+                            Spacer(Modifier.width(6.dp))
+                            Icon(
+                                androidx.compose.material.icons.Icons.Default.Public,
+                                contentDescription = "Published",
+                                tint = textSecondary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
                 }
 
 

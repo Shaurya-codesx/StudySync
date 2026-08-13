@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
+import com.example.studysyncandroid.util.toUserFriendlyMessage
 
 data class RoomUiState(
     val isLoading: Boolean = false,
@@ -70,7 +71,7 @@ class RoomViewModel @Inject constructor(
                     )
                 },
                 onFailure = { err ->
-                    _uiState.update { it.copy(isLoading = false, error = err.message ?: "Failed to create room") }
+                    _uiState.update { it.copy(isLoading = false, error = err.toUserFriendlyMessage()) }
                 }
             )
         }
@@ -104,12 +105,12 @@ class RoomViewModel @Inject constructor(
                             )
                         },
                         onFailure = { err ->
-                            _uiState.update { it.copy(isLoading = false, error = err.message ?: "Failed to join room") }
+                            _uiState.update { it.copy(isLoading = false, error = err.toUserFriendlyMessage()) }
                         }
                     )
                 },
                 onFailure = { err ->
-                    _uiState.update { it.copy(isLoading = false, error = err.message ?: "Room not found") }
+                    _uiState.update { it.copy(isLoading = false, error = err.toUserFriendlyMessage()) }
                 }
             )
         }

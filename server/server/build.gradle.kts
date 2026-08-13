@@ -44,6 +44,8 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm")
     implementation("io.ktor:ktor-client-content-negotiation-jvm")
 
+    implementation("com.sun.mail:javax.mail:1.6.2")
+
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation(ktorLibs.server.testHost)

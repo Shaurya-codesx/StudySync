@@ -23,6 +23,9 @@ import androidx.navigation.navArgument
 import com.example.studysyncandroid.R
 import com.example.studysyncandroid.ui.auth.LoginScreen
 import com.example.studysyncandroid.ui.auth.SignupScreen
+import com.example.studysyncandroid.ui.auth.EmailVerificationScreen
+import com.example.studysyncandroid.ui.auth.ForgotPasswordScreen
+import com.example.studysyncandroid.ui.auth.ResetPasswordScreen
 import com.example.studysyncandroid.ui.decks.DeckListScreen
 import com.example.studysyncandroid.ui.decks.FolderDecksScreen
 import com.example.studysyncandroid.ui.decks.GenerateDeckScreen
@@ -66,7 +69,9 @@ fun StudySyncNavGraph(
         currentRoute == Screen.Analytics.route ||
         currentRoute == Screen.RetentionCurve.route ||
         currentRoute == Screen.LibraryStatus.route ||
-        currentRoute == Screen.UpcomingReviews.route -> deckListBgColor
+        currentRoute == Screen.UpcomingReviews.route ||
+        currentRoute == Screen.Login.route ||
+        currentRoute == Screen.Signup.route -> deckListBgColor
         else -> MaterialTheme.colorScheme.background
     }
 
@@ -107,14 +112,60 @@ fun StudySyncNavGraph(
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     },
-                    onNavigateToSignup = { navController.navigate(Screen.Signup.route) }
+                    onNavigateToSignup = { navController.navigate(Screen.Signup.route) },
+                    onNavigateToForgotPassword = { navController.navigate(Screen.ForgotPassword.route) }
                 )
             }
 
             composable(Screen.Signup.route) {
                 SignupScreen(
-                    onSignupSuccess = { navController.popBackStack() },
+                    onSignupSuccess = { email -> 
+                        navController.navigate(Screen.VerifyEmail.createRoute(email)) {
+                            popUpTo(Screen.Signup.route) { inclusive = true }
+                        }
+                    },
                     onNavigateToLogin = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = Screen.VerifyEmail.route,
+                arguments = listOf(navArgument("email") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val email = backStackEntry.arguments?.getString("email").orEmpty()
+                EmailVerificationScreen(
+                    email = email,
+                    onVerificationSuccess = {
+                        navController.navigate(Screen.DeckList.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(Screen.ForgotPassword.route) {
+                ForgotPasswordScreen(
+                    onNavigateToReset = { email ->
+                        navController.navigate(Screen.ResetPassword.createRoute(email)) {
+                            popUpTo(Screen.ForgotPassword.route) { inclusive = true }
+                        }
+                    },
+                    onBackToLogin = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = Screen.ResetPassword.route,
+                arguments = listOf(navArgument("email") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val email = backStackEntry.arguments?.getString("email").orEmpty()
+                ResetPasswordScreen(
+                    email = email,
+                    onResetSuccess = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
                 )
             }
 

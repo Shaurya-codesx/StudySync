@@ -11,6 +11,19 @@ object Users : Table("users") {
     val email = varchar("email", 255).uniqueIndex()
     val passwordHash = text("password_hash")
     val displayName = varchar("display_name", 100).nullable()
+    val isVerified = bool("is_verified").default(false)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+// 1.5 OTPs Table
+object Otps : Table("otps") {
+    val id = uuid("id").autoGenerate()
+    val email = varchar("email", 255)
+    val otpHash = text("otp_hash")
+    val expiresAt = datetime("expires_at")
+    val type = varchar("type", 50)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     override val primaryKey = PrimaryKey(id)

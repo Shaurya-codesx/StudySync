@@ -40,4 +40,29 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun isLoggedIn(): Boolean = tokenDataStore.hasValidSession()
+
+    suspend fun verifyEmail(email: String, otp: String): Result<Unit> =
+        runCatching {
+            val response = authApi.verifyEmail(email, otp)
+            tokenDataStore.saveTokens(response.accessToken, response.refreshToken)
+            httpClient.clearAuthTokens()
+        }
+
+    suspend fun resendVerification(email: String): Result<Unit> =
+        runCatching {
+            authApi.resendVerification(email)
+            Unit
+        }
+
+    suspend fun forgotPassword(email: String): Result<Unit> =
+        runCatching {
+            authApi.forgotPassword(email)
+            Unit
+        }
+
+    suspend fun resetPassword(email: String, otp: String, newPassword: String): Result<Unit> =
+        runCatching {
+            authApi.resetPassword(email, otp, newPassword)
+            Unit
+        }
 }

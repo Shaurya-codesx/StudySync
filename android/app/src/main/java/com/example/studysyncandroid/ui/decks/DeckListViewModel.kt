@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.studysyncandroid.data.local.entities.DeckEntity
 import com.example.studysyncandroid.data.repository.DeckRepository
+import com.example.studysyncandroid.util.toUserFriendlyMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,7 +40,7 @@ class DeckListViewModel @Inject constructor(
         _isRefreshing.value = true
         viewModelScope.launch {
             deckRepository.refreshDecks()
-                .onFailure { _errorMessage.value = it.message ?: "Failed to refresh decks" }
+                .onFailure { _errorMessage.value = it.toUserFriendlyMessage() }
             _isRefreshing.value = false
         }
     }
@@ -47,14 +48,14 @@ class DeckListViewModel @Inject constructor(
     fun moveDeckToFolder(deckId: String, folderId: String?) {
         viewModelScope.launch {
             deckRepository.moveDeckToFolder(deckId, folderId)
-                .onFailure { _errorMessage.value = it.message ?: "Failed to move deck" }
+                .onFailure { _errorMessage.value = it.toUserFriendlyMessage() }
         }
     }
 
     fun deleteDeck(deckId: String) {
         viewModelScope.launch {
             deckRepository.deleteDeck(deckId)
-                .onFailure { _errorMessage.value = it.message ?: "Failed to delete deck" }
+                .onFailure { _errorMessage.value = it.toUserFriendlyMessage() }
         }
     }
 
@@ -65,7 +66,7 @@ class DeckListViewModel @Inject constructor(
                     _errorMessage.value = "Deck published to Marketplace!" 
                     refresh()
                 }
-                .onFailure { _errorMessage.value = it.message ?: "Failed to publish deck" }
+                .onFailure { _errorMessage.value = it.toUserFriendlyMessage() }
         }
     }
 
@@ -76,7 +77,7 @@ class DeckListViewModel @Inject constructor(
                     _errorMessage.value = "Deck removed from Marketplace!" 
                     refresh()
                 }
-                .onFailure { _errorMessage.value = it.message ?: "Failed to unpublish deck" }
+                .onFailure { _errorMessage.value = it.toUserFriendlyMessage() }
         }
     }
 }

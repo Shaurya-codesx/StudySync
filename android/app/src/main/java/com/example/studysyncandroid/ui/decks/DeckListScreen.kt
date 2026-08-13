@@ -446,18 +446,24 @@ private fun DeckRow(
                 modifier = Modifier.padding(20.dp).fillMaxWidth()
             ) {
                 HorizontalDivider(color = dividerColor, thickness = 1.dp, modifier = Modifier.padding(bottom = 12.dp))
+                Text(
+                    deck.title,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 20.sp,
+                    color = textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth().padding(end = 24.dp)
+                )
+                Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        deck.title,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 20.sp,
-                        color = textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
+                        text = "${deck.cardCount} card${if (deck.cardCount == 1) "" else "s"}",
+                        fontSize = 14.sp,
+                        color = textSecondary
                     )
                     if (deck.isPublic) {
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(8.dp))
                         Icon(
                             Icons.Default.Public,
                             contentDescription = "Published",
@@ -466,12 +472,6 @@ private fun DeckRow(
                         )
                     }
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "${deck.cardCount} card${if (deck.cardCount == 1) "" else "s"}",
-                    fontSize = 14.sp,
-                    color = textSecondary
-                )
             }
 
             Box(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {

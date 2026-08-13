@@ -37,4 +37,20 @@ class UserRepository {
             Users.select { Users.id eq idInput }.singleOrNull()
         }
     }
+
+    fun verifyUser(emailInput: String) {
+        transaction {
+            Users.update({ Users.email eq emailInput }) {
+                it[isVerified] = true
+            }
+        }
+    }
+
+    fun updatePassword(emailInput: String, newPasswordHash: String) {
+        transaction {
+            Users.update({ Users.email eq emailInput }) {
+                it[passwordHash] = newPasswordHash
+            }
+        }
+    }
 }

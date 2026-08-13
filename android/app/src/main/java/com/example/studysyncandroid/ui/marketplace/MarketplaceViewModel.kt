@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.studysyncandroid.util.toUserFriendlyMessage
 
 @HiltViewModel
 class MarketplaceViewModel @Inject constructor(
@@ -29,7 +30,7 @@ class MarketplaceViewModel @Inject constructor(
         viewModelScope.launch {
             marketplaceRepository.cloneDeck(deckId)
                 .onSuccess { _message.value = "Deck successfully cloned to your library!" }
-                .onFailure { _message.value = it.message ?: "Failed to clone deck" }
+                .onFailure { _message.value = it.toUserFriendlyMessage() }
         }
     }
 

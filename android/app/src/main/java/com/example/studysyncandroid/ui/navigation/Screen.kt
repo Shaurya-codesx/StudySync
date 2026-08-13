@@ -3,6 +3,13 @@ package com.example.studysyncandroid.ui.navigation
 sealed class Screen(val route: String) {
     data object Login : Screen("login")
     data object Signup : Screen("signup")
+    data object VerifyEmail : Screen("verify_email/{email}") {
+        fun createRoute(email: String) = "verify_email/$email"
+    }
+    data object ForgotPassword : Screen("forgot_password")
+    data object ResetPassword : Screen("reset_password/{email}") {
+        fun createRoute(email: String) = "reset_password/$email"
+    }
     data object DeckList : Screen("deck_list")
     data object GenerateDeck : Screen("generate_deck")
     data object Review : Screen("review/{deckId}") {
