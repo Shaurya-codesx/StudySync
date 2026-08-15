@@ -8,10 +8,12 @@ import com.example.studysyncandroid.data.remote.dto.VerifyEmailRequest
 import com.example.studysyncandroid.data.remote.dto.ResendVerificationRequest
 import com.example.studysyncandroid.data.remote.dto.ForgotPasswordRequest
 import com.example.studysyncandroid.data.remote.dto.ResetPasswordRequest
+import com.example.studysyncandroid.data.remote.dto.UserProfileResponse
 import com.example.studysyncandroid.data.remote.dto.SignupResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
+import io.ktor.client.request.get
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -55,4 +57,7 @@ class AuthApi @Inject constructor(
             contentType(ContentType.Application.Json)
             setBody(ResetPasswordRequest(email, otp, newPassword))
         }.body()
+
+    suspend fun getUserProfile(): UserProfileResponse =
+        client.get("/user/profile").body()
 }

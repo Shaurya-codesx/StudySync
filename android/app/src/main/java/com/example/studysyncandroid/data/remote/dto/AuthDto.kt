@@ -60,3 +60,9 @@ data class ResetPasswordRequest(
 data class MessageResponse(
     val message: String
 )
+
+@Serializable
+data class UserProfileResponse(
+    val email: String,
+    val displayName: String?
+)

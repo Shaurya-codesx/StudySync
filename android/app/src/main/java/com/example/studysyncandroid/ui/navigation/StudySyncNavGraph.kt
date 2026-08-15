@@ -71,7 +71,10 @@ fun StudySyncNavGraph(
         currentRoute == Screen.LibraryStatus.route ||
         currentRoute == Screen.UpcomingReviews.route ||
         currentRoute == Screen.Login.route ||
-        currentRoute == Screen.Signup.route -> deckListBgColor
+        currentRoute == Screen.Signup.route ||
+        currentRoute == Screen.ForgotPassword.route ||
+        currentRoute?.startsWith("verify_email") == true ||
+        currentRoute?.startsWith("reset_password") == true -> deckListBgColor
         else -> MaterialTheme.colorScheme.background
     }
 
@@ -235,6 +238,9 @@ fun StudySyncNavGraph(
                         navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
                         }
+                    },
+                    onNavigateToResetPassword = { email ->
+                        navController.navigate(Screen.ResetPassword.createRoute(email))
                     }
                 )
             }

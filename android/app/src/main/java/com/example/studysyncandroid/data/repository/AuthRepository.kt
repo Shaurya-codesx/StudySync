@@ -65,4 +65,9 @@ class AuthRepository @Inject constructor(
             authApi.resetPassword(email, otp, newPassword)
             Unit
         }
+
+    suspend fun getUserProfile(): Result<com.example.studysyncandroid.data.remote.dto.UserProfileResponse> =
+        runCatching {
+            authApi.getUserProfile()
+        }
 }

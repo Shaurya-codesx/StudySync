@@ -12,6 +12,7 @@ import com.example.routes.marketplaceRoutes
 import com.example.routes.healthRoutes
 import com.example.routes.roomRoutes
 import com.example.routes.analyticsRoutes
+import com.example.routes.userRoutes
 import com.example.services.AiService
 import com.example.services.CardService
 import com.example.services.DeckService
@@ -39,6 +40,7 @@ fun Application.configureRouting() {
         // 2. Existing active routes
         healthRoutes()
         authRoutes()
+        userRoutes(userRepository)
 
         // 3. CRUD + Phase 7/8 routes
         deckRoutes(deckService, aiService)

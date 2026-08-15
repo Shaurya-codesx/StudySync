@@ -12,3 +12,9 @@ data class LoginResponse(
 data class ErrorResponse(
     val error: String
 )
+
+@Serializable
+data class UserProfileResponse(
+    val email: String,
+    val displayName: String?
+)
