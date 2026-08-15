@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
@@ -29,6 +30,8 @@ fun ProfileScreen(
     val profileState by viewModel.profileState.collectAsState()
     val otpSent by viewModel.otpSent.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showEditNameDialog by remember { mutableStateOf(false) }
+    var newDisplayName by remember { mutableStateOf("") }
 
     LaunchedEffect(otpSent) {
         if (otpSent) {
@@ -76,12 +79,30 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(
-                        text = "Hi, $displayName!",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = colorResource(id = R.color.deck_list_text_primary)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Hi, $displayName!",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(id = R.color.deck_list_text_primary)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = {
+                                newDisplayName = displayName
+                                showEditNameDialog = true
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                                contentDescription = "Edit Name",
+                                tint = colorResource(id = R.color.deck_list_accent)
+                            )
+                        }
+                    }
                     
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -164,6 +185,44 @@ fun ProfileScreen(
                 containerColor = colorResource(id = R.color.deck_list_card_bg),
                 titleContentColor = colorResource(id = R.color.deck_list_text_primary),
                 textContentColor = colorResource(id = R.color.deck_list_text_secondary)
+            )
+        }
+
+        if (showEditNameDialog) {
+            AlertDialog(
+                onDismissRequest = { showEditNameDialog = false },
+                title = { Text("Edit Display Name") },
+                text = {
+                    OutlinedTextField(
+                        value = newDisplayName,
+                        onValueChange = { newDisplayName = it },
+                        label = { Text("Display Name") },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        )
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (newDisplayName.isNotBlank()) {
+                                viewModel.updateDisplayName(newDisplayName)
+                                showEditNameDialog = false
+                            }
+                        }
+                    ) {
+                        Text("Save", color = colorResource(id = R.color.deck_list_accent))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showEditNameDialog = false }) {
+                        Text("Cancel", color = colorResource(id = R.color.deck_list_text_primary))
+                    }
+                },
+                containerColor = colorResource(id = R.color.deck_list_card_bg),
+                titleContentColor = colorResource(id = R.color.deck_list_text_primary)
             )
         }
     }

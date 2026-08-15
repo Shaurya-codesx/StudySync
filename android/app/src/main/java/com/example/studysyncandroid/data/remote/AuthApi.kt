@@ -14,6 +14,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.get
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -60,4 +61,10 @@ class AuthApi @Inject constructor(
 
     suspend fun getUserProfile(): UserProfileResponse =
         client.get("/user/profile").body()
+
+    suspend fun updateUserProfile(displayName: String): MessageResponse =
+        client.put("/user/profile") {
+            contentType(ContentType.Application.Json)
+            setBody(com.example.studysyncandroid.data.remote.dto.UpdateProfileRequest(displayName))
+        }.body()
 }

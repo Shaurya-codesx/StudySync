@@ -66,3 +66,8 @@ data class UserProfileResponse(
     val email: String,
     val displayName: String?
 )
+
+@Serializable
+data class UpdateProfileRequest(
+    val displayName: String
+)

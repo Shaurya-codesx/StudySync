@@ -53,4 +53,12 @@ class UserRepository {
             }
         }
     }
+
+    fun updateDisplayName(idInput: UUID, newName: String) {
+        transaction {
+            Users.update({ Users.id eq idInput }) {
+                it[displayName] = newName
+            }
+        }
+    }
 }

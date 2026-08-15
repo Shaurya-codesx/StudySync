@@ -70,4 +70,10 @@ class AuthRepository @Inject constructor(
         runCatching {
             authApi.getUserProfile()
         }
+
+    suspend fun updateUserProfile(displayName: String): Result<Unit> =
+        runCatching {
+            authApi.updateUserProfile(displayName)
+            Unit
+        }
 }

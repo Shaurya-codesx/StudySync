@@ -6,6 +6,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
+import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.http.HttpStatusCode
 import java.util.UUID
@@ -37,6 +38,27 @@ fun Route.userRoutes(userRepository: UserRepository) {
                 } else {
                     call.respond(HttpStatusCode.NotFound, mapOf("error" to "User not found"))
                 }
+            }
+
+            put("/profile") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdString = principal?.payload?.getClaim("userId")?.asString()
+                
+                if (userIdString == null) {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid token"))
+                    return@put
+                }
+                
+                val userId = try {
+                    UUID.fromString(userIdString)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid user ID format"))
+                    return@put
+                }
+
+                val request = call.receive<com.example.models.UpdateProfileRequest>()
+                userRepository.updateDisplayName(userId, request.displayName)
+                call.respond(HttpStatusCode.OK, mapOf("message" to "Profile updated successfully"))
             }
         }
     }

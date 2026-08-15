@@ -64,6 +64,18 @@ class ProfileViewModel @Inject constructor(
         _otpSent.value = false
     }
 
+    fun updateDisplayName(newName: String) {
+        viewModelScope.launch {
+            authRepository.updateUserProfile(newName)
+                .onSuccess {
+                    fetchProfile() // Refresh the profile to get updated info
+                }
+                .onFailure { error ->
+                    _profileState.value = ProfileUiState.Error(error.toUserFriendlyMessage())
+                }
+        }
+    }
+
     fun logout(onComplete: () -> Unit) {
         viewModelScope.launch {
             authRepository.logout()
