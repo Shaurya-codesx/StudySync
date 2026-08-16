@@ -43,7 +43,6 @@ fun ProfileScreen(
     var showEditNameDialog by remember { mutableStateOf(false) }
     var showDeleteWarningDialog by remember { mutableStateOf(false) }
     var showDeletePasswordDialog by remember { mutableStateOf(false) }
-    
     var newDisplayName by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
 
