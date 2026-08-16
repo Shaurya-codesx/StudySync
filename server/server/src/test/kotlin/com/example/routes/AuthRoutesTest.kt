@@ -72,6 +72,6 @@ class AuthRoutesTest {
             setBody(LoginRequest(testEmail, "WrongPassword!"))
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, badLoginResponse.status, "Login with wrong password should return 401")
+        assertEquals(HttpStatusCode.Forbidden, badLoginResponse.status, "Login with unverified email should return 403")
     }
 }

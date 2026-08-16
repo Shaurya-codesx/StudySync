@@ -53,6 +53,7 @@ dependencies {
 }
 
 tasks.withType<Test> {
+    systemProperty("user.timezone", "UTC")
     environment("DATABASE_URL", "jdbc:postgresql://localhost:5432/studysync")
     environment("ENV", "test")
     environment("JWT_SECRET", "dummy_secret_for_tests")
