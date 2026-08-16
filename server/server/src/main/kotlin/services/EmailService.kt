@@ -20,12 +20,14 @@ class EmailService {
             return@withContext
         }
 
+        // Force IPv4 routing (Fixes hanging IPv6 resolution on cloud providers like Railway)
+        System.setProperty("java.net.preferIPv4Stack", "true")
+
         val props = Properties().apply {
             put("mail.smtp.auth", "true")
-            put("mail.smtp.starttls.enable", "true")
+            put("mail.smtp.ssl.enable", "true")
             put("mail.smtp.host", "smtp.gmail.com")
-            put("mail.smtp.port", "587")
-            put("mail.smtp.ssl.protocols", "TLSv1.2")
+            put("mail.smtp.port", "465")
             
             // Add strict timeouts (5 seconds) to prevent infinite hanging
             put("mail.smtp.connectiontimeout", "5000")
