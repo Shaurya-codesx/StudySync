@@ -38,6 +38,11 @@ class EmailService {
     }
 
     suspend fun sendEmail(toEmail: String, subject: String, body: String) = withContext(Dispatchers.IO) {
+        if (System.getenv("ENV") == "test") {
+            println("Email not sent (Test Environment): $subject to $toEmail")
+            return@withContext
+        }
+
         if (apiKey.isNullOrBlank()) {
             println("Email not sent. BREVO_API_KEY missing in .env")
             return@withContext

@@ -51,3 +51,10 @@ dependencies {
     testImplementation(ktorLibs.server.testHost)
     testImplementation(libs.kotlinx.rpc.client)
 }
+
+tasks.withType<Test> {
+    environment("DATABASE_URL", "jdbc:postgresql://localhost:5432/studysync")
+    environment("ENV", "test")
+    environment("JWT_SECRET", "dummy_secret_for_tests")
+    environment("AI_API_KEY", "dummy_api_key")
+}

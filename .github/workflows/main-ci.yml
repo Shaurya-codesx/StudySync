@@ -18,8 +18,8 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
           POSTGRES_DB: studysync
         ports:
           - 5432:5432
@@ -45,7 +45,8 @@ jobs:
 
       - name: Build and Test
         env:
-          DATABASE_URL: jdbc:postgresql://localhost:5432/studysync?user=testuser&password=testpassword
+          DATABASE_URL: jdbc:postgresql://localhost:5432/studysync
+          ENV: test
           JWT_SECRET: ci-dummy-secret-key-123
           AI_API_KEY: mock_api_key
           BREVO_API_KEY: ci_dummy_brevo_key
