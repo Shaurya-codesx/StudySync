@@ -19,12 +19,27 @@ class AuthService {
     }
 
     suspend fun signup(emailInput: String, passwordInput: String, displayNameInput: String): UUID? {
+        val existingUser = userRepository.findByEmail(emailInput)
         val hashedPassword = PasswordUtils.hashPassword(passwordInput)
-        val userId = userRepository.insertUser(emailInput, hashedPassword, displayNameInput)
-        if (userId != null) {
-            sendVerificationOtp(emailInput)
+
+        if (existingUser != null) {
+            val isVerified = existingUser[Users.isVerified]
+            if (isVerified) {
+                throw IllegalArgumentException("USER_ALREADY_EXISTS")
+            } else {
+                val userId = existingUser[Users.id]
+                userRepository.updatePassword(emailInput, hashedPassword)
+                userRepository.updateDisplayName(userId, displayNameInput)
+                sendVerificationOtp(emailInput)
+                return userId
+            }
+        } else {
+            val userId = userRepository.insertUser(emailInput, hashedPassword, displayNameInput)
+            if (userId != null) {
+                sendVerificationOtp(emailInput)
+            }
+            return userId
         }
-        return userId
     }
 
     suspend fun sendVerificationOtp(email: String) {

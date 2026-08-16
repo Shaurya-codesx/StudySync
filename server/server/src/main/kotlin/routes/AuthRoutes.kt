@@ -23,22 +23,30 @@ fun Route.authRoutes() {
         post("/signup") {
             val request = call.receive<RegisterRequest>()
 
-            val newUserId = authService.signup(request.email, request.password, request.displayName)
+            try {
+                val newUserId = authService.signup(request.email, request.password, request.displayName)
 
-            if (newUserId != null) {
-                call.respond(
-                    HttpStatusCode.Created,
-                    SignupResponse(
-                        userId = newUserId.toString(),
-                        email = request.email,
-                        displayName = request.displayName
+                if (newUserId != null) {
+                    call.respond(
+                        HttpStatusCode.Created,
+                        SignupResponse(
+                            userId = newUserId.toString(),
+                            email = request.email,
+                            displayName = request.displayName
+                        )
                     )
-                )
-            } else {
-                call.respond(
-                    HttpStatusCode.InternalServerError,
-                    mapOf("error" to "Failed to create user.")
-                )
+                } else {
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Failed to create user.")
+                    )
+                }
+            } catch (e: IllegalArgumentException) {
+                if (e.message == "USER_ALREADY_EXISTS") {
+                    call.respond(HttpStatusCode.Conflict, mapOf("error" to "User with this email already exists."))
+                } else {
+                    call.respondText(e.message ?: "Bad Request", status = HttpStatusCode.BadRequest)
+                }
             }
         }
 
