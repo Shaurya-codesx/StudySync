@@ -47,6 +47,11 @@ fun Route.authRoutes() {
                 } else {
                     call.respondText(e.message ?: "Bad Request", status = HttpStatusCode.BadRequest)
                 }
+            } catch (e: RuntimeException) {
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Failed to dispatch verification email. Please try again.")
+                )
             }
         }
 
@@ -112,6 +117,8 @@ fun Route.authRoutes() {
             } catch (e: IllegalArgumentException) {
                 // Don't leak if user exists or not, just return OK usually, but for study project it's fine
                 call.respondText(e.message ?: "Error", status = HttpStatusCode.BadRequest)
+            } catch (e: RuntimeException) {
+                call.respondText("Failed to send email", status = HttpStatusCode.InternalServerError)
             }
         }
 

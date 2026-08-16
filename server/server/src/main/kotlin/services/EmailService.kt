@@ -26,6 +26,11 @@ class EmailService {
             put("mail.smtp.host", "smtp.gmail.com")
             put("mail.smtp.port", "587")
             put("mail.smtp.ssl.protocols", "TLSv1.2")
+            
+            // Add strict timeouts (5 seconds) to prevent infinite hanging
+            put("mail.smtp.connectiontimeout", "5000")
+            put("mail.smtp.timeout", "5000")
+            put("mail.smtp.writetimeout", "5000")
         }
 
         val session = Session.getInstance(props, object : javax.mail.Authenticator() {
@@ -45,7 +50,8 @@ class EmailService {
             println("Email sent successfully to $toEmail")
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Failed to send email to $toEmail")
+            println("Failed to send email to $toEmail: ${e.message}")
+            throw RuntimeException("Failed to dispatch email", e)
         }
     }
 }
