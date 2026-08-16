@@ -1,58 +1,72 @@
 package com.example.services
 
-import java.util.Properties
-import javax.mail.Message
-import javax.mail.PasswordAuthentication
-import javax.mail.Session
-import javax.mail.Transport
-import javax.mail.internet.InternetAddress
-import javax.mail.internet.MimeMessage
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@Serializable
+data class BrevoSender(val name: String, val email: String)
+
+@Serializable
+data class BrevoRecipient(val email: String)
+
+@Serializable
+data class BrevoEmailRequest(
+    val sender: BrevoSender,
+    val to: List<BrevoRecipient>,
+    val subject: String,
+    val textContent: String
+)
+
 class EmailService {
-    private val username = System.getenv("SMTP_EMAIL")
-    private val password = System.getenv("SMTP_PASSWORD")
+    private val apiKey = System.getenv("BREVO_API_KEY")
+    private val senderEmail = System.getenv("BREVO_SENDER_EMAIL") ?: "hello@studysync.app"
+    private val senderName = "StudySync"
+
+    private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
 
     suspend fun sendEmail(toEmail: String, subject: String, body: String) = withContext(Dispatchers.IO) {
-        if (username.isNullOrBlank() || password.isNullOrBlank()) {
-            println("Email not sent. SMTP credentials missing in .env")
+        if (apiKey.isNullOrBlank()) {
+            println("Email not sent. BREVO_API_KEY missing in .env")
             return@withContext
         }
 
-        // Force IPv4 routing (Fixes hanging IPv6 resolution on cloud providers like Railway)
-        System.setProperty("java.net.preferIPv4Stack", "true")
-
-        val props = Properties().apply {
-            put("mail.smtp.auth", "true")
-            put("mail.smtp.ssl.enable", "true")
-            put("mail.smtp.host", "smtp.gmail.com")
-            put("mail.smtp.port", "465")
-            
-            // Add strict timeouts (5 seconds) to prevent infinite hanging
-            put("mail.smtp.connectiontimeout", "5000")
-            put("mail.smtp.timeout", "5000")
-            put("mail.smtp.writetimeout", "5000")
-        }
-
-        val session = Session.getInstance(props, object : javax.mail.Authenticator() {
-            override fun getPasswordAuthentication(): PasswordAuthentication {
-                return PasswordAuthentication(username, password)
-            }
-        })
-
         try {
-            val message = MimeMessage(session).apply {
-                setFrom(InternetAddress(username))
-                setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
-                setSubject(subject)
-                setText(body)
+            val requestBody = BrevoEmailRequest(
+                sender = BrevoSender(name = senderName, email = senderEmail),
+                to = listOf(BrevoRecipient(email = toEmail)),
+                subject = subject,
+                textContent = body
+            )
+
+            val response = client.post("https://api.brevo.com/v3/smtp/email") {
+                header("api-key", apiKey)
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
             }
-            Transport.send(message)
-            println("Email sent successfully to $toEmail")
+
+            if (response.status.isSuccess()) {
+                println("Email sent successfully to $toEmail via Brevo API")
+            } else {
+                val errorText = response.bodyAsText()
+                println("Failed to send email to $toEmail: ${response.status} - $errorText")
+                throw RuntimeException("Failed to dispatch email via Brevo: ${response.status}")
+            }
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Failed to send email to $toEmail: ${e.message}")
+            println("Exception while sending email to $toEmail: ${e.message}")
             throw RuntimeException("Failed to dispatch email", e)
         }
     }

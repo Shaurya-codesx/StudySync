@@ -8,8 +8,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=my_ultra_secure_jwt_secret_key_123
       - AI_API_KEY=${AI_API_KEY}
-      - SMTP_EMAIL=${SMTP_EMAIL}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - BREVO_API_KEY=${BREVO_API_KEY}
+      - BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL}
       - JWT_ACCESS_EXPIRY_MINUTES=15
       - JWT_REFRESH_EXPIRY_DAYS=30
     depends_on:
