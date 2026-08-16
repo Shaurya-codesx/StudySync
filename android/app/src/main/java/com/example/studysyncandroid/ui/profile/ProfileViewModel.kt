@@ -31,6 +31,9 @@ class ProfileViewModel @Inject constructor(
     private val _otpSent = MutableStateFlow<Boolean>(false)
     val otpSent: StateFlow<Boolean> = _otpSent.asStateFlow()
 
+    private val _accountDeleted = MutableStateFlow<Boolean>(false)
+    val accountDeleted: StateFlow<Boolean> = _accountDeleted.asStateFlow()
+
     init {
         fetchProfile()
     }
@@ -80,6 +83,19 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.logout()
             onComplete()
+        }
+    }
+
+    fun deleteAccount(password: String) {
+        viewModelScope.launch {
+            authRepository.deleteAccount(password)
+                .onSuccess {
+                    authRepository.logout()
+                    _accountDeleted.value = true
+                }
+                .onFailure { error ->
+                    _profileState.value = ProfileUiState.Error(error.toUserFriendlyMessage())
+                }
         }
     }
 }

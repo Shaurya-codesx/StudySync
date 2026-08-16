@@ -25,4 +25,7 @@ sealed class Screen(val route: String) {
     data object LibraryStatus : Screen("library_status")
     data object UpcomingReviews : Screen("upcoming_reviews")
     data object Profile : Screen("profile")
+    data object ManagePublicDecks : Screen("manage_public_decks")
+    data object AboutDeveloper : Screen("about_developer")
+    data object Onboarding : Screen("onboarding")
 }

@@ -8,6 +8,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,15 +28,30 @@ import com.example.studysyncandroid.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    onNavigateBack: () -> Unit,
     onLogout: () -> Unit,
     onNavigateToResetPassword: (String) -> Unit,
+    onNavigateToManagePublicDecks: () -> Unit,
+    onNavigateToAboutDeveloper: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val profileState by viewModel.profileState.collectAsState()
     val otpSent by viewModel.otpSent.collectAsState()
+    val accountDeleted by viewModel.accountDeleted.collectAsState()
+    
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showEditNameDialog by remember { mutableStateOf(false) }
+    var showDeleteWarningDialog by remember { mutableStateOf(false) }
+    var showDeletePasswordDialog by remember { mutableStateOf(false) }
+    
     var newDisplayName by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
+
+    LaunchedEffect(accountDeleted) {
+        if (accountDeleted) {
+            onLogout()
+        }
+    }
 
     LaunchedEffect(otpSent) {
         if (otpSent) {
@@ -42,6 +62,23 @@ fun ProfileScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Profile", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = colorResource(id = R.color.deck_list_text_primary)) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colorResource(id = R.color.deck_list_text_primary)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(id = R.color.deck_list_bg)
+                )
+            )
+        },
         containerColor = colorResource(id = R.color.deck_list_bg)
     ) { padding ->
         Column(
@@ -114,35 +151,95 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(48.dp))
 
+                    // Manage Public Decks Button
+                    Button(
+                        onClick = onNavigateToManagePublicDecks,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.deck_list_card_bg)),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                    ) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Visibility, contentDescription = null, tint = colorResource(id = R.color.deck_list_accent))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("Manage Public Decks", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = colorResource(id = R.color.deck_list_text_primary))
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = colorResource(id = R.color.deck_list_text_secondary))
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     // Reset Password Button
                     Button(
                         onClick = { viewModel.sendResetOtp(email) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.deck_list_accent))
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.deck_list_card_bg)),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                     ) {
-                        Icon(Icons.Default.LockReset, contentDescription = null, tint = colorResource(id = R.color.deck_list_bg))
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text("Reset Password", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = colorResource(id = R.color.deck_list_bg))
+                        Icon(Icons.Default.LockReset, contentDescription = null, tint = colorResource(id = R.color.deck_list_accent))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("Reset Password", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = colorResource(id = R.color.deck_list_text_primary))
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = colorResource(id = R.color.deck_list_text_secondary))
+                    }
+
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    // Log Out and Delete Account Side by Side
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showLogoutDialog = true },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
+                        ) {
+                            Icon(Icons.Default.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Log Out", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
+                        }
+
+                        OutlinedButton(
+                            onClick = { showDeleteWarningDialog = true },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
+                        ) {
+                            Icon(androidx.compose.material.icons.Icons.Default.DeleteForever, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Delete", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Logout Button
-                    OutlinedButton(
-                        onClick = { showLogoutDialog = true },
+                    // About the Developer Button
+                    Button(
+                        onClick = onNavigateToAboutDeveloper,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.deck_list_card_bg)),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                     ) {
-                        Icon(Icons.Default.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text("Log Out", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        Icon(androidx.compose.material.icons.Icons.Default.Info, contentDescription = null, tint = colorResource(id = R.color.deck_list_accent))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("About the Developer", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = colorResource(id = R.color.deck_list_text_primary))
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = colorResource(id = R.color.deck_list_text_secondary))
                     }
                 }
                 is ProfileUiState.Error -> {
@@ -218,6 +315,84 @@ fun ProfileScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showEditNameDialog = false }) {
+                        Text("Cancel", color = colorResource(id = R.color.deck_list_text_primary))
+                    }
+                },
+                containerColor = colorResource(id = R.color.deck_list_card_bg),
+                titleContentColor = colorResource(id = R.color.deck_list_text_primary)
+            )
+        }
+
+        // Delete Account Warning Dialog
+        if (showDeleteWarningDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteWarningDialog = false },
+                title = { Text("Delete Account") },
+                text = { Text("This action will permanently erase all data of your account and cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteWarningDialog = false
+                            showDeletePasswordDialog = true
+                        }
+                    ) {
+                        Text("Continue", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteWarningDialog = false }) {
+                        Text("Cancel", color = colorResource(id = R.color.deck_list_text_primary))
+                    }
+                },
+                containerColor = colorResource(id = R.color.deck_list_card_bg),
+                titleContentColor = colorResource(id = R.color.deck_list_text_primary),
+                textContentColor = colorResource(id = R.color.deck_list_text_secondary)
+            )
+        }
+
+        // Delete Account Password Dialog
+        if (showDeletePasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { 
+                    showDeletePasswordDialog = false 
+                    passwordInput = ""
+                },
+                title = { Text("Verify Password") },
+                text = {
+                    Column {
+                        Text("Enter your password to verify account deletion.", color = colorResource(id = R.color.deck_list_text_secondary))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = passwordInput,
+                            onValueChange = { passwordInput = it },
+                            label = { Text("Password") },
+                            singleLine = true,
+                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                            )
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (passwordInput.isNotBlank()) {
+                                viewModel.deleteAccount(passwordInput)
+                                showDeletePasswordDialog = false
+                                passwordInput = ""
+                            }
+                        }
+                    ) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { 
+                        showDeletePasswordDialog = false 
+                        passwordInput = ""
+                    }) {
                         Text("Cancel", color = colorResource(id = R.color.deck_list_text_primary))
                     }
                 },

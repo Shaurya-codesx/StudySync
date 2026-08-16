@@ -60,6 +60,38 @@ fun Route.userRoutes(userRepository: UserRepository) {
                 userRepository.updateDisplayName(userId, request.displayName)
                 call.respond(HttpStatusCode.OK, mapOf("message" to "Profile updated successfully"))
             }
+
+            delete("/account") {
+                val principal = call.principal<JWTPrincipal>()
+                val userIdString = principal?.payload?.getClaim("userId")?.asString()
+                
+                if (userIdString == null) {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid token"))
+                    return@delete
+                }
+                
+                val userId = try {
+                    UUID.fromString(userIdString)
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid user ID format"))
+                    return@delete
+                }
+
+                val request = call.receive<com.example.models.DeleteAccountRequest>()
+                val userRow = userRepository.findById(userId)
+                
+                if (userRow != null) {
+                    val savedHash = userRow[com.example.models.Users.passwordHash]
+                    if (com.example.utils.PasswordUtils.verifyPassword(request.password, savedHash)) {
+                        userRepository.deleteUser(userId)
+                        call.respond(HttpStatusCode.OK, mapOf("message" to "Account deleted successfully"))
+                    } else {
+                        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Incorrect password"))
+                    }
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "User not found"))
+                }
+            }
         }
     }
 }

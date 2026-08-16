@@ -76,4 +76,10 @@ class AuthRepository @Inject constructor(
             authApi.updateUserProfile(displayName)
             Unit
         }
+
+    suspend fun deleteAccount(password: String): Result<Unit> =
+        runCatching {
+            authApi.deleteAccount(password)
+            Unit
+        }
 }

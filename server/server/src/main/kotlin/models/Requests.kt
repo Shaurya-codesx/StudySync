@@ -54,3 +54,8 @@ data class ResetPasswordRequest(
 data class UpdateProfileRequest(
     val displayName: String
 )
+
+@Serializable
+data class DeleteAccountRequest(
+    val password: String
+)

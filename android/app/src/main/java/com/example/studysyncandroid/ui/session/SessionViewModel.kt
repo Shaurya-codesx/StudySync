@@ -11,9 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.example.studysyncandroid.data.local.SettingsDataStore
+import kotlinx.coroutines.flow.first
+
 @HiltViewModel
 class SessionViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
 
     private val _startDestination = MutableStateFlow<String?>(null)
@@ -21,11 +25,20 @@ class SessionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _startDestination.value = if (authRepository.isLoggedIn()) {
+            val hasSeenOnboarding = settingsDataStore.hasSeenOnboardingFlow.first()
+            _startDestination.value = if (!hasSeenOnboarding) {
+                Screen.Onboarding.route
+            } else if (authRepository.isLoggedIn()) {
                 Screen.DeckList.route
             } else {
                 Screen.Login.route
             }
+        }
+    }
+
+    fun finishOnboarding() {
+        viewModelScope.launch {
+            settingsDataStore.setHasSeenOnboarding(true)
         }
     }
 }

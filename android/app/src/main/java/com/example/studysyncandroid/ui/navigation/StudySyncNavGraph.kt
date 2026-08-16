@@ -45,7 +45,8 @@ fun StudySyncNavGraph(
     navController: NavHostController = rememberNavController(),
     startDestination: String = Screen.Login.route,
     modifier: Modifier = Modifier,
-    folderViewModel: FolderViewModel = hiltViewModel()
+    folderViewModel: FolderViewModel = hiltViewModel(),
+    sessionViewModel: com.example.studysyncandroid.ui.session.SessionViewModel = hiltViewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -74,6 +75,9 @@ fun StudySyncNavGraph(
         currentRoute == Screen.Signup.route ||
         currentRoute == Screen.ForgotPassword.route ||
         currentRoute == Screen.Profile.route ||
+        currentRoute == Screen.ManagePublicDecks.route ||
+        currentRoute == Screen.AboutDeveloper.route ||
+        currentRoute == Screen.Onboarding.route ||
         currentRoute?.startsWith("verify_email") == true ||
         currentRoute?.startsWith("reset_password") == true -> deckListBgColor
         else -> MaterialTheme.colorScheme.background
@@ -109,6 +113,24 @@ fun StudySyncNavGraph(
             startDestination = startDestination,
             modifier = modifier.padding(innerPadding)
         ) {
+            composable(Screen.Onboarding.route) {
+                com.example.studysyncandroid.ui.onboarding.OnboardingScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToSignup = {
+                        navController.navigate(Screen.Signup.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
+                    },
+                    onFinishOnboarding = {
+                        sessionViewModel.finishOnboarding()
+                    }
+                )
+            }
+
             composable(Screen.Login.route) {
                 LoginScreen(
                     onLoginSuccess = {
@@ -235,6 +257,7 @@ fun StudySyncNavGraph(
 
             composable(Screen.Profile.route) {
                 ProfileScreen(
+                    onNavigateBack = { navController.popBackStack() },
                     onLogout = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
@@ -242,7 +265,25 @@ fun StudySyncNavGraph(
                     },
                     onNavigateToResetPassword = { email ->
                         navController.navigate(Screen.ResetPassword.createRoute(email))
+                    },
+                    onNavigateToManagePublicDecks = {
+                        navController.navigate(Screen.ManagePublicDecks.route)
+                    },
+                    onNavigateToAboutDeveloper = {
+                        navController.navigate(Screen.AboutDeveloper.route)
                     }
+                )
+            }
+
+            composable(Screen.ManagePublicDecks.route) {
+                com.example.studysyncandroid.ui.profile.ManagePublicDecksScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.AboutDeveloper.route) {
+                com.example.studysyncandroid.ui.profile.AboutDeveloperScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

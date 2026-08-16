@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
@@ -59,6 +60,17 @@ class UserRepository {
             Users.update({ Users.id eq idInput }) {
                 it[displayName] = newName
             }
+        }
+    }
+
+    fun deleteUser(userIdInput: UUID) {
+        transaction {
+            // Because Exposed lacks CASCADE for some references, we manually delete children
+            com.example.models.RoomMembers.deleteWhere { userId eq userIdInput }
+            com.example.models.StudyRooms.deleteWhere { hostId eq userIdInput }
+            com.example.models.Decks.deleteWhere { userId eq userIdInput }
+            com.example.models.Folders.deleteWhere { userId eq userIdInput }
+            Users.deleteWhere { id eq userIdInput }
         }
     }
 }

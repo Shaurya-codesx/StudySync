@@ -16,6 +16,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.get
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.request.request
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import javax.inject.Inject
@@ -66,5 +67,12 @@ class AuthApi @Inject constructor(
         client.put("/user/profile") {
             contentType(ContentType.Application.Json)
             setBody(com.example.studysyncandroid.data.remote.dto.UpdateProfileRequest(displayName))
+        }.body()
+
+    suspend fun deleteAccount(password: String): MessageResponse =
+        client.request("/user/account") {
+            method = io.ktor.http.HttpMethod.Delete
+            contentType(ContentType.Application.Json)
+            setBody(com.example.studysyncandroid.data.remote.dto.DeleteAccountRequest(password))
         }.body()
 }
