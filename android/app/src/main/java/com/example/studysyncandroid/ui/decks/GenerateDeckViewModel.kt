@@ -19,14 +19,14 @@ sealed interface GenerateDeckUiState {
 }
 
 @HiltViewModel
-class GenerateDeckViewModel @Inject constructor(
+open class GenerateDeckViewModel @Inject constructor(
     private val deckRepository: DeckRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<GenerateDeckUiState>(GenerateDeckUiState.Idle)
-    val uiState: StateFlow<GenerateDeckUiState> = _uiState.asStateFlow()
+    open val uiState: StateFlow<GenerateDeckUiState> = _uiState.asStateFlow()
 
-    fun generateDeck(sourceText: String) {
+    open fun generateDeck(sourceText: String) {
         _uiState.value = GenerateDeckUiState.Loading
         viewModelScope.launch {
             deckRepository.generateDeck(sourceText)

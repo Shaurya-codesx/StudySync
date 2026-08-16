@@ -9,19 +9,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class AuthRepository @Inject constructor(
+open class AuthRepository @Inject constructor(
     private val authApi: AuthApi,
     private val tokenDataStore: TokenDataStore,
     private val appDatabase: AppDatabase,
     private val httpClient: HttpClient
 ) {
-    suspend fun signup(email: String, password: String, displayName: String): Result<Unit> =
+    open suspend fun signup(email: String, password: String, displayName: String): Result<Unit> =
         runCatching {
             authApi.signup(email, password, displayName)
             Unit
         }
 
-    suspend fun login(email: String, password: String): Result<Unit> =
+    open suspend fun login(email: String, password: String): Result<Unit> =
         runCatching {
             val response = authApi.login(email, password)
             tokenDataStore.saveTokens(response.accessToken, response.refreshToken)

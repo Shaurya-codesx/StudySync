@@ -34,15 +34,15 @@ data class ReviewUiState(
 }
 
 @HiltViewModel
-class ReviewViewModel @Inject constructor(
+open class ReviewViewModel @Inject constructor(
     private val cardRepository: CardRepository,
     private val deckRepository: DeckRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReviewUiState())
-    val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
+    open val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
 
-    fun loadDueCards(deckId: String) {
+    open fun loadDueCards(deckId: String) {
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
@@ -68,11 +68,11 @@ class ReviewViewModel @Inject constructor(
         }
     }
 
-    fun revealAnswer() {
+    open fun revealAnswer() {
         _uiState.update { it.copy(isAnswerRevealed = true) }
     }
 
-    fun submitRating(quality: Int) {
+    open fun submitRating(quality: Int) {
         val currentCard = _uiState.value.currentCard ?: return
 
         viewModelScope.launch {

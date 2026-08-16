@@ -13,14 +13,14 @@ import java.util.TimeZone
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 
-class DeckRepository @Inject constructor(
+open class DeckRepository @Inject constructor(
     private val deckApi: DeckApi,
     private val deckDao: DeckDao,
     private val cardDao: CardDao
 ) {
-    fun getDecksStream(): Flow<List<DeckEntity>> = deckDao.getAllDecks()
+    open fun getDecksStream(): Flow<List<DeckEntity>> = deckDao.getAllDecks()
 
-    suspend fun generateDeck(sourceText: String): Result<String> = runCatching {
+    open suspend fun generateDeck(sourceText: String): Result<String> = runCatching {
         val response = deckApi.generateDeck(sourceText)
         val now = nowIso()
 
@@ -46,7 +46,7 @@ class DeckRepository @Inject constructor(
         response.deckId
     }
 
-    suspend fun refreshDecks(): Result<Unit> = runCatching {
+    open suspend fun refreshDecks(): Result<Unit> = runCatching {
         val summaries = deckApi.getDecks()
         deckDao.insertDecks(
             summaries.map { summary ->

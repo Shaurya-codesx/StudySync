@@ -10,7 +10,7 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 
-class CardRepository @Inject constructor(
+open class CardRepository @Inject constructor(
     private val cardApi: CardApi,
     private val cardDao: CardDao
 ) {
@@ -20,7 +20,7 @@ class CardRepository @Inject constructor(
     /**
      * Fetches only the cards for a specific deck that are due for review right now.
      */
-    suspend fun getDueCards(deckId: String): List<CardEntity> {
+    open suspend fun getDueCards(deckId: String): List<CardEntity> {
         // 1. Sync cards from the backend first to ensure Room is up to date
         // runCatching silently swallows network errors so offline mode still works
         runCatching {

@@ -20,17 +20,17 @@ sealed interface AuthUiState {
 }
 
 @HiltViewModel
-class AuthViewModel @Inject constructor(
+open class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
-    val loginState: StateFlow<AuthUiState> = _loginState.asStateFlow()
+    open val loginState: StateFlow<AuthUiState> = _loginState.asStateFlow()
 
     private val _signupState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
-    val signupState: StateFlow<AuthUiState> = _signupState.asStateFlow()
+    open val signupState: StateFlow<AuthUiState> = _signupState.asStateFlow()
 
-    fun login(email: String, password: String) {
+    open fun login(email: String, password: String) {
         _loginState.value = AuthUiState.Loading
         viewModelScope.launch {
             authRepository.login(email, password)
@@ -39,7 +39,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signup(email: String, password: String, displayName: String) {
+    open fun signup(email: String, password: String, displayName: String) {
         _signupState.value = AuthUiState.Loading
         viewModelScope.launch {
             authRepository.signup(email, password, displayName)
