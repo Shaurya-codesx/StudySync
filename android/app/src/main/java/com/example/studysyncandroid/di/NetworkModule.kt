@@ -35,7 +35,7 @@ object NetworkModule {
 
     // Emulator loopback to your machine's localhost:8080 (docker-compose server).
     // Swap this for your deployed Railway/Fly.io URL when testing against prod.
-    private const val BASE_URL = "https://bountiful-nurturing-production-7f29.up.railway.app/"
+    private const val BASE_URL = "https://studysync-production-19a6.up.railway.app/"
 
     @Provides
     @Singleton
