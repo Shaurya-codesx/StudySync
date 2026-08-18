@@ -20,7 +20,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # The path is now shorter because the 'server' root is already established
-COPY --from=builder /home/gradle/src/build/libs/*-all.jar ./ktor-app.jar
+COPY --from=builder /home/gradle/src/server/build/libs/*-all.jar ./ktor-app.jar
 
 EXPOSE 8080
 
