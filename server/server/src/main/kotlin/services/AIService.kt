@@ -34,7 +34,7 @@ class AiService {
         isLenient = true
     }
 
-    suspend fun generateFlashcards(sourceText: String): List<GeneratedCardDto> {
+    suspend fun generateFlashcards(sourceText: String): com.example.dto.AiGeneratedDeckResult {
         val maxRetries = 1
         var attempt = 0
 
@@ -47,17 +47,17 @@ class AiService {
                 val cleanedJson = cleanJsonString(rawAiResponse)
 
                 // 3. Attempt to parse into our strict DTO
-                val cards = jsonParser.decodeFromString<List<GeneratedCardDto>>(cleanedJson)
+                val result = jsonParser.decodeFromString<com.example.dto.AiGeneratedDeckResult>(cleanedJson)
 
                 // 4. Validate business logic shape
-                if (cards.isEmpty()) {
+                if (result.cards.isEmpty()) {
                     throw Exception("AI returned an empty array of cards.")
                 }
-                if (cards.any { it.question.isBlank() || it.answer.isBlank() }) {
+                if (result.cards.any { it.question.isBlank() || it.answer.isBlank() }) {
                     throw Exception("AI returned cards with missing questions or answers.")
                 }
 
-                return cards
+                return result
 
             } catch (e: io.ktor.client.plugins.ClientRequestException) {
                 println("====== AI SERVICE HTTP ERROR ======")
@@ -86,7 +86,7 @@ class AiService {
                 }
             }
         }
-        return emptyList()
+        return com.example.dto.AiGeneratedDeckResult("Error", emptyList())
     }
 
     private suspend fun fetchFromGemini(sourceText: String): String {
@@ -95,9 +95,9 @@ class AiService {
             Extract the most important facts, definitions, and concepts.
     
             CRITICAL RULES:
-            1. You MUST return ONLY a raw JSON array of objects, where each object has exactly two keys: "question" and "answer".
-            2. Do not include markdown code fences (like ```json), conversational text, or explanations. Just the JSON array.
-            3. If the provided text is gibberish, conversational, lacks factual information, or cannot reasonably be turned into flashcards, you MUST return an empty array: []
+            1. You MUST return ONLY a raw JSON object with exactly two keys: "title" (a concise 3-6 word title summarizing the notes) and "cards" (a JSON array of objects where each object has exactly two keys: "question" and "answer").
+            2. Do not include markdown code fences (like ```json), conversational text, or explanations. Just the JSON object.
+            3. If the provided text is gibberish, conversational, lacks factual information, or cannot reasonably be turned into flashcards, you MUST return an empty array for cards, like this: { "title": "Error", "cards": [] }
     
             Notes:
             $sourceText
@@ -137,8 +137,8 @@ class AiService {
     }
 
     private fun cleanJsonString(raw: String): String {
-        val startIndex = raw.indexOf('[')
-        val endIndex = raw.lastIndexOf(']')
+        val startIndex = raw.indexOf('{')
+        val endIndex = raw.lastIndexOf('}')
         if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
             return raw.substring(startIndex, endIndex + 1)
         }

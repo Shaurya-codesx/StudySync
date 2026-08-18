@@ -68,10 +68,10 @@ fun Route.deckRoutes(deckService: DeckService, aiService: AiService) {
                 }
 
                 // 3. Call the AI Service
-                val aiGeneratedCards = aiService.generateFlashcards(sourceText)
+                val aiResult = aiService.generateFlashcards(sourceText)
 
-                // 4. Generate a default title from the notes
-                val generatedTitle = "AI Deck - " + sourceText.take(25).replace("\n", " ").trim() + "..."
+                // 4. Use the AI-generated title
+                val generatedTitle = aiResult.title
 
                 // 5. Save everything in a single SQL Transaction
                 val userUuid = UUID.fromString(userIdStr)
@@ -85,7 +85,7 @@ fun Route.deckRoutes(deckService: DeckService, aiService: AiService) {
                     }[Decks.id] // Grab the auto-generated UUID
 
                     // Batch Insert all the Cards at once
-                    val insertedCards = Cards.batchInsert(aiGeneratedCards) { cardDto ->
+                    val insertedCards = Cards.batchInsert(aiResult.cards) { cardDto ->
                         this[Cards.deckId] = newDeckId
                         this[Cards.question] = cardDto.question
                         this[Cards.answer] = cardDto.answer
