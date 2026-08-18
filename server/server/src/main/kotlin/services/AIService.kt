@@ -11,13 +11,20 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.decodeFromString
 
+import io.ktor.client.plugins.HttpTimeout
+
 class AiService {
     private val apiKey = System.getenv("AI_API_KEY") ?: "mock_test_key"
-        ?: throw IllegalArgumentException("AI_API_KEY environment variable is missing")
 
     private val client = HttpClient(CIO) {
+        expectSuccess = true
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 90000
+            connectTimeoutMillis = 90000
+            socketTimeoutMillis = 90000
         }
     }
 
@@ -52,13 +59,31 @@ class AiService {
 
                 return cards
 
-            } catch (e: Exception) {
+            } catch (e: io.ktor.client.plugins.ClientRequestException) {
+                println("====== AI SERVICE HTTP ERROR ======")
+                println("Status: ${e.response.status}")
+                e.printStackTrace()
+                println("===================================")
+                if (e.response.status == io.ktor.http.HttpStatusCode.TooManyRequests) {
+                    throw e // Bubble up rate limits immediately to the user
+                }
+                
                 attempt++
                 if (attempt > maxRetries) {
-                    // This exception will be caught by StatusPages and mapped to a 502 Bad Gateway
-                    throw Exception("Failed to generate valid flashcards after retries: ${e.message}")
+                    throw Exception("Failed to generate valid flashcards after retries: ${e.message}", e)
                 }
-                // If it failed but we have retries left, the loop will just run again
+            } catch (e: Exception) {
+                println("====== AI SERVICE CRASH ======")
+                println("Attempt $attempt failed.")
+                println("Error Type: ${e::class.simpleName}")
+                println("Message: ${e.message}")
+                e.printStackTrace()
+                println("==============================")
+                
+                attempt++
+                if (attempt > maxRetries) {
+                    throw Exception("Failed to generate valid flashcards after retries: ${e.message}", e)
+                }
             }
         }
         return emptyList()
@@ -95,6 +120,10 @@ class AiService {
         }
 
         val responseBody = response.bodyAsText()
+        println("==== RAW GEMINI API RESPONSE ====")
+        println(responseBody)
+        println("=================================")
+        
         val jsonResponse = Json.parseToJsonElement(responseBody).jsonObject
 
         return jsonResponse["candidates"]
@@ -108,6 +137,11 @@ class AiService {
     }
 
     private fun cleanJsonString(raw: String): String {
+        val startIndex = raw.indexOf('[')
+        val endIndex = raw.lastIndexOf(']')
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            return raw.substring(startIndex, endIndex + 1)
+        }
         return raw.trim()
             .removePrefix("```json")
             .removePrefix("```")

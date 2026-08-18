@@ -29,17 +29,22 @@ fun Application.configureStatusPages() {
             call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid request format or missing fields."))
         }
 
+        // Catch HTTP Request Exceptions from Ktor Client (e.g. Gemini 429 Too Many Requests)
+        exception<io.ktor.client.plugins.ClientRequestException> { call, cause ->
+            if (cause.response.status == HttpStatusCode.TooManyRequests) {
+                call.respond(HttpStatusCode.TooManyRequests, ErrorResponse("AI generation rate limit exceeded. Please wait a minute and try again."))
+            } else {
+                call.respond(cause.response.status, ErrorResponse("AI service error: ${cause.response.status.description}"))
+            }
+        }
+
         // Catch 500 Internal Server Error: The ultimate fallback for everything else
         exception<Throwable> { call, cause ->
             cause.printStackTrace() // Logs it to your Docker terminal for debugging
-            call.respond(HttpStatusCode.InternalServerError, ErrorResponse("An unexpected server error occurred."))
-        }
-
-        exception<Throwable> { call, cause ->
             if (cause.message?.contains("Failed to generate valid flashcards") == true) {
                 call.respond(HttpStatusCode.BadGateway, mapOf("error" to "AI generation failed, please try again. The notes might be too complex or malformed."))
             } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "An unexpected error occurred: ${cause.message}"))
+                call.respond(HttpStatusCode.InternalServerError, ErrorResponse("An unexpected server error occurred."))
             }
         }
     }

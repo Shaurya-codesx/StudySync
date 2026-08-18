@@ -15,6 +15,7 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
@@ -33,14 +34,18 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    // Emulator loopback to your machine's localhost:8080 (docker-compose server).
-    // Swap this for your deployed Railway/Fly.io URL when testing against prod.
     private const val BASE_URL = "https://studysync-production-19a6.up.railway.app/"
 
     @Provides
     @Singleton
     fun provideHttpClient(tokenDataStore: TokenDataStore): HttpClient = HttpClient(OkHttp) {
-        expectSuccess = true // non-2xx responses throw, so repositories can runCatching { }
+        expectSuccess = true
+
+        install(HttpTimeout) {
+            requestTimeoutMillis = 90000 // 90 seconds for AI Deck Generation
+            connectTimeoutMillis = 90000
+            socketTimeoutMillis = 90000
+        }
 
         install(ContentNegotiation) {
             json(
