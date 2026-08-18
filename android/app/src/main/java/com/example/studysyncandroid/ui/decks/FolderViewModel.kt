@@ -14,11 +14,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FolderViewModel @Inject constructor(
+open class FolderViewModel @Inject constructor(
     private val folderRepository: FolderRepository
 ) : ViewModel() {
 
-    val foldersWithDecks: StateFlow<List<FolderWithDecks>> = folderRepository.getFoldersWithDecksStream()
+    open val foldersWithDecks: StateFlow<List<FolderWithDecks>> = folderRepository.getFoldersWithDecksStream()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -26,7 +26,7 @@ class FolderViewModel @Inject constructor(
         )
 
     private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+    open val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
         refresh()

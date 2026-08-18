@@ -25,16 +25,16 @@ data class RoomUiState(
 )
 
 @HiltViewModel
-class RoomViewModel @Inject constructor(
+open class RoomViewModel @Inject constructor(
     private val roomRepository: RoomRepository,
     private val webSocketClient: WebSocketClient,
     private val tokenDataStore: TokenDataStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RoomUiState())
-    val uiState: StateFlow<RoomUiState> = _uiState.asStateFlow()
+    open val uiState: StateFlow<RoomUiState> = _uiState.asStateFlow()
 
-    val liveState: StateFlow<RoomLiveState> = webSocketClient.roomState
+    open val liveState: StateFlow<RoomLiveState> = webSocketClient.roomState
 
     init {
         // Local Ticker: Counts down every second while the timer state is "running"

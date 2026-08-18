@@ -15,11 +15,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DeckListViewModel @Inject constructor(
+open class DeckListViewModel @Inject constructor(
     private val deckRepository: DeckRepository
 ) : ViewModel() {
 
-    val decks: StateFlow<List<DeckEntity>> = deckRepository.getDecksStream()
+    open val decks: StateFlow<List<DeckEntity>> = deckRepository.getDecksStream()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -27,7 +27,7 @@ class DeckListViewModel @Inject constructor(
         )
 
     private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+    open val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
