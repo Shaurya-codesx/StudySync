@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -128,53 +129,90 @@ fun ReviewScreen(
                                 )
                             }
 
+                            val density = androidx.compose.ui.platform.LocalDensity.current.density
+                            val rotation by androidx.compose.animation.core.animateFloatAsState(
+                                targetValue = if (uiState.isAnswerRevealed) 180f else 0f,
+                                animationSpec = androidx.compose.animation.core.tween(durationMillis = 400),
+                                label = "flipAnimation"
+                            )
+
                             // Flashcard
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .weight(1f)
-                                    .padding(bottom = 32.dp),
+                                    .padding(bottom = 32.dp)
+                                    .graphicsLayer {
+                                        rotationY = rotation
+                                        cameraDistance = 12f * density
+                                    },
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = cardBg),
                                 border = BorderStroke(1.dp, borderColor),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(24.dp),
-                                    horizontalAlignment = Alignment.Start
-                                ) {
-                                    // Red top line
-                                    HorizontalDivider(
-                                        color = dividerColor,
-                                        thickness = 1.5.dp,
-                                        modifier = Modifier.padding(bottom = 24.dp)
-                                    )
+                                if (rotation <= 90f) {
+                                    // Front of the card (Question only)
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(24.dp),
+                                        horizontalAlignment = Alignment.Start
+                                    ) {
+                                        HorizontalDivider(
+                                            color = dividerColor,
+                                            thickness = 1.5.dp,
+                                            modifier = Modifier.padding(bottom = 24.dp)
+                                        )
+                                        Text(
+                                            text = "Question",
+                                            fontSize = 14.sp,
+                                            color = textSecondary,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                        Text(
+                                            text = card.question,
+                                            fontFamily = FontFamily.Serif,
+                                            fontSize = 24.sp,
+                                            color = textPrimary,
+                                            lineHeight = 32.sp
+                                        )
+                                    }
+                                } else {
+                                    // Back of the card (Question + Answer)
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(24.dp)
+                                            .graphicsLayer {
+                                                rotationY = 180f // Un-mirror the text
+                                            },
+                                        horizontalAlignment = Alignment.Start
+                                    ) {
+                                        HorizontalDivider(
+                                            color = dividerColor,
+                                            thickness = 1.5.dp,
+                                            modifier = Modifier.padding(bottom = 24.dp)
+                                        )
+                                        Text(
+                                            text = "Question",
+                                            fontSize = 14.sp,
+                                            color = textSecondary,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                        Text(
+                                            text = card.question,
+                                            fontFamily = FontFamily.Serif,
+                                            fontSize = 24.sp,
+                                            color = textPrimary,
+                                            lineHeight = 32.sp
+                                        )
 
-                                    // Question
-                                    Text(
-                                        text = "Question",
-                                        fontSize = 14.sp,
-                                        color = textSecondary,
-                                        modifier = Modifier.padding(bottom = 8.dp)
-                                    )
-                                    Text(
-                                        text = card.question,
-                                        fontFamily = FontFamily.Serif,
-                                        fontSize = 24.sp,
-                                        color = textPrimary,
-                                        lineHeight = 32.sp
-                                    )
-
-                                    if (uiState.isAnswerRevealed) {
                                         Spacer(Modifier.height(24.dp))
                                         
-                                        // Dashed line
-                                        val dashColor = borderColor
                                         Canvas(modifier = Modifier.fillMaxWidth().height(1.dp)) {
                                             drawLine(
-                                                color = dashColor,
+                                                color = borderColor,
                                                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                                 end = androidx.compose.ui.geometry.Offset(size.width, 0f),
                                                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -183,7 +221,6 @@ fun ReviewScreen(
 
                                         Spacer(Modifier.height(24.dp))
 
-                                        // Answer
                                         Text(
                                             text = "Answer",
                                             fontSize = 14.sp,

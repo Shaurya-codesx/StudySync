@@ -5,6 +5,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.NavBackStackEntry
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -57,6 +66,24 @@ fun StudySyncNavGraph(
         Screen.Rooms.route,
         Screen.Analytics.route
     )
+
+    val dockEnterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        val initialIndex = topLevelRoutes.indexOf(initialState.destination.route?.substringBefore("?"))
+        val targetIndex = topLevelRoutes.indexOf(targetState.destination.route?.substringBefore("?"))
+        if (initialIndex != -1 && targetIndex != -1 && initialIndex != targetIndex) {
+            val direction = if (targetIndex > initialIndex) 1 else -1
+            slideInHorizontally(initialOffsetX = { it / 4 * direction }, animationSpec = tween(300)) + fadeIn(animationSpec = tween(300))
+        } else null
+    }
+
+    val dockExitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        val initialIndex = topLevelRoutes.indexOf(initialState.destination.route?.substringBefore("?"))
+        val targetIndex = topLevelRoutes.indexOf(targetState.destination.route?.substringBefore("?"))
+        if (initialIndex != -1 && targetIndex != -1 && initialIndex != targetIndex) {
+            val direction = if (targetIndex > initialIndex) -1 else 1
+            slideOutHorizontally(targetOffsetX = { it / 4 * direction }, animationSpec = tween(300)) + fadeOut(animationSpec = tween(300))
+        } else null
+    }
 
     var showCreateFolderDialog by remember { mutableStateOf(false) }
 
@@ -195,7 +222,13 @@ fun StudySyncNavGraph(
                 )
             }
 
-            composable(Screen.DeckList.route) {
+            composable(
+                route = Screen.DeckList.route,
+                enterTransition = dockEnterTransition,
+                exitTransition = dockExitTransition,
+                popEnterTransition = dockEnterTransition,
+                popExitTransition = dockExitTransition
+            ) {
                 DeckListScreen(
                     onDeckClick = { deckId -> navController.navigate(Screen.Review.createRoute(deckId)) },
                     onFolderClick = { folderId -> navController.navigate(Screen.FolderDecks.createRoute(folderId)) },
@@ -218,17 +251,35 @@ fun StudySyncNavGraph(
                 ReviewScreen(deckId = deckId)
             }
 
-            composable(Screen.Rooms.route) {
+            composable(
+                route = Screen.Rooms.route,
+                enterTransition = dockEnterTransition,
+                exitTransition = dockExitTransition,
+                popEnterTransition = dockEnterTransition,
+                popExitTransition = dockExitTransition
+            ) {
                 RoomsScreen()
             }
 
-            composable(Screen.Marketplace.route) {
+            composable(
+                route = Screen.Marketplace.route,
+                enterTransition = dockEnterTransition,
+                exitTransition = dockExitTransition,
+                popEnterTransition = dockEnterTransition,
+                popExitTransition = dockExitTransition
+            ) {
                 MarketplaceScreen(
                     onBackClick = { navController.popBackStack() }
                 )
             }
 
-            composable(Screen.Analytics.route) {
+            composable(
+                route = Screen.Analytics.route,
+                enterTransition = dockEnterTransition,
+                exitTransition = dockExitTransition,
+                popEnterTransition = dockEnterTransition,
+                popExitTransition = dockExitTransition
+            ) {
                 AnalyticsDashboardScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onRetentionCurveClick = { navController.navigate(Screen.RetentionCurve.route) },
