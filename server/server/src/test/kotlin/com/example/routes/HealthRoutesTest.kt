@@ -29,7 +29,7 @@ class HealthRoutesTest {
         }
         client.get("/health").apply {
             assertEquals(HttpStatusCode.OK, status)
-            assertEquals("{\"status\":\"yo\"}", bodyAsText())
+            assertEquals("{\"status\":\"HELLO\"}", bodyAsText())
         }
     }
 }

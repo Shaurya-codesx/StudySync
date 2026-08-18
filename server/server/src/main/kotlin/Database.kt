@@ -11,21 +11,34 @@ fun Application.configureDatabase() {
     val rawDbUrl = System.getenv("DATABASE_URL")
         ?: throw IllegalArgumentException("DATABASE_URL is missing!")
 
-    // 1. Parse the standard Postgres URL string
-    val uri = URI(if (rawDbUrl.startsWith("postgres")) rawDbUrl else "postgresql://$rawDbUrl")
+    val jdbcUrl: String
+    val parsedUser: String
+    val parsedPassword: String
 
-    // 2. Extract the username and password provided by Railway
-    val userInfo = uri.userInfo?.split(":")
-    val parsedUser = userInfo?.getOrNull(0) ?: ""
-    val parsedPassword = userInfo?.getOrNull(1) ?: ""
+    if (rawDbUrl.startsWith("jdbc:")) {
+        // Already a JDBC URL (used in local tests or CI)
+        jdbcUrl = rawDbUrl
+        parsedUser = System.getenv("POSTGRES_USER") ?: "user"
+        parsedPassword = System.getenv("POSTGRES_PASSWORD") ?: "password"
+    } else {
+        // Standard Postgres URL (used in Railway)
+        val uri = URI(if (rawDbUrl.startsWith("postgres")) rawDbUrl else "postgresql://$rawDbUrl")
+        val userInfo = uri.userInfo?.split(":")
+        parsedUser = userInfo?.getOrNull(0) ?: ""
+        parsedPassword = userInfo?.getOrNull(1) ?: ""
+        jdbcUrl = "jdbc:postgresql://${uri.host}:${uri.port}${uri.path}"
+    }
 
-    // 3. Construct the JDBC-specific URL format that Exposed requires
-    val jdbcUrl = "jdbc:postgresql://${uri.host}:${uri.port}${uri.path}"
+    val driverClass = if (jdbcUrl.startsWith("jdbc:h2")) {
+        "org.h2.Driver"
+    } else {
+        "org.postgresql.Driver"
+    }
 
-    // 4. Capture the database connection into a variable using the parsed credentials
+    // Capture the database connection into a variable using the parsed credentials
     val database = Database.connect(
         url = jdbcUrl,
-        driver = "org.postgresql.Driver",
+        driver = driverClass,
         user = parsedUser,
         password = parsedPassword
     )

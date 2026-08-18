@@ -46,6 +46,7 @@ dependencies {
 
     implementation("com.sun.mail:javax.mail:1.6.2")
 
+    testImplementation("com.h2database:h2:2.2.224")
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation(ktorLibs.server.testHost)
@@ -54,7 +55,7 @@ dependencies {
 
 tasks.withType<Test> {
     systemProperty("user.timezone", "UTC")
-    environment("DATABASE_URL", "jdbc:postgresql://localhost:5432/studysync")
+    environment("DATABASE_URL", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
     environment("ENV", "test")
     environment("JWT_SECRET", "dummy_secret_for_tests")
     environment("AI_API_KEY", "dummy_api_key")
