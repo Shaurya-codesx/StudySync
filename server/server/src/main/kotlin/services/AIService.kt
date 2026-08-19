@@ -73,6 +73,7 @@ class AiService {
                     throw Exception("Failed to generate valid flashcards after retries: ${e.message}", e)
                 }
             } catch (e: Exception) {
+                
                 println("====== AI SERVICE CRASH ======")
                 println("Attempt $attempt failed.")
                 println("Error Type: ${e::class.simpleName}")

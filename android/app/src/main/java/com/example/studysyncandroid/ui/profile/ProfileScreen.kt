@@ -1,5 +1,6 @@
 package com.example.studysyncandroid.ui.profile
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -91,7 +92,7 @@ fun ProfileScreen(
 
             when (val state = profileState) {
                 is ProfileUiState.Loading -> {
-                    CircularProgressIndicator(color = colorResource(id = R.color.deck_list_accent))
+                    ProfileSkeleton()
                 }
                 is ProfileUiState.Success -> {
                     val displayName = state.profile.displayName ?: "User"
@@ -400,4 +401,97 @@ fun ProfileScreen(
             )
         }
     }
+}
+@Composable
+fun ProfileSkeleton() {
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val alpha by transition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "shimmer_alpha"
+    )
+    val shimmerColor = colorResource(id = R.color.deck_list_card_bg).copy(alpha = alpha)
+
+    Box(
+        modifier = Modifier
+            .size(100.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(shimmerColor)
+    )
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    Box(
+        modifier = Modifier
+            .width(200.dp)
+            .height(36.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(shimmerColor)
+    )
+    
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Box(
+        modifier = Modifier
+            .width(150.dp)
+            .height(20.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(shimmerColor)
+    )
+
+    Spacer(modifier = Modifier.height(48.dp))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(shimmerColor)
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(shimmerColor)
+    )
+
+    Spacer(modifier = Modifier.height(48.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(52.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(shimmerColor)
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(52.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(shimmerColor)
+        )
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(shimmerColor)
+    )
 }

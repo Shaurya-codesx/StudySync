@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FolderDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @androidx.room.Upsert
     suspend fun insertFolder(folder: FolderEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @androidx.room.Upsert
     suspend fun insertFolders(folders: List<FolderEntity>)
 
     @Query("DELETE FROM folders WHERE id = :folderId")
