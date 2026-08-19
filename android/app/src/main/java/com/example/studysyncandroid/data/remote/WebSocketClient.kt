@@ -68,18 +68,12 @@ class WebSocketClient @Inject constructor(
         )
 
         try {
-            session = client.webSocketSession {
-                url {
-                    // 1. Append the path securely
-                    encodedPath = "/ws/rooms/$roomCode"
-
-                    // 2. Add the token as a query parameter
-                    parameters.append("token", token)
-
-                    // 3. EXPLICITLY set the port to 8080 to prevent Ktor from dropping to port 80
-                    port = 8080
-                }
-            }
+            val baseWsUrl = com.example.studysyncandroid.di.NetworkModule.BASE_URL
+                .replace("https://", "wss://")
+                .replace("http://", "ws://")
+            val fullWsUrl = "${baseWsUrl}ws/rooms/$roomCode?token=$token"
+            
+            session = client.webSocketSession(urlString = fullWsUrl)
 
             _roomState.update { it.copy(isConnected = true) }
             Log.d("WebSocketClient", "Connected to room: $roomCode")
