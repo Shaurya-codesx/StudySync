@@ -7,8 +7,8 @@ import java.util.Date
 import java.util.UUID
 
 object JwtUtils {
-    // Pulls the secret from your .env file, or uses a fallback for local testing
-    private val secret = System.getenv("JWT_SECRET") ?: "super-secret-development-key"
+    // Pulls the secret from your .env file
+    private val secret = System.getenv("JWT_SECRET") ?: error("CRITICAL: JWT_SECRET environment variable is missing!")
     private val algorithm = Algorithm.HMAC256(secret)
 
     fun generateAccessToken(userId: UUID, email: String): String {

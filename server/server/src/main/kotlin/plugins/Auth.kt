@@ -10,7 +10,7 @@ import io.ktor.server.response.*
 
 fun Application.configureAuth() {
     // Pull the exact same secret we used to generate the token
-    val secret = System.getenv("JWT_SECRET") ?: "super-secret-development-key"
+    val secret = System.getenv("JWT_SECRET") ?: error("CRITICAL: JWT_SECRET environment variable is missing!")
 
     install(Authentication) {
         jwt("jwt") {
