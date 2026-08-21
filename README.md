@@ -19,27 +19,17 @@
 ### 📚 Organization & Profile
 | Login Screen | Home List | Folder View | User Profile |
 | :---: | :---: | :---: | :---: |
-| <img width="1280" height="2856" alt="Login Screen" src="https://github.com/user-attachments/assets/d2b4dbed-17ae-4eda-ad9e-5c222f4e1405" />
- | <img width="1280" height="2856" alt="Home" src="https://github.com/user-attachments/assets/49e329f7-4394-4d9c-88d8-0f38be22f622" />
- | <img width="1280" height="2856" alt="Folder Deck Screen" src="https://github.com/user-attachments/assets/7bb6b299-03e7-4858-b0a5-b262eccebc20" />
- | <img width="1280" height="2856" alt="User Profile" src="https://github.com/user-attachments/assets/f71bfa83-7aa9-4d18-a273-fe3aaccb8b10" />
- |
+| <img width="250" alt="Login Screen" src="https://github.com/user-attachments/assets/d2b4dbed-17ae-4eda-ad9e-5c222f4e1405" /> | <img width="250" alt="Home" src="https://github.com/user-attachments/assets/49e329f7-4394-4d9c-88d8-0f38be22f622" /> | <img width="250" alt="Folder Deck Screen" src="https://github.com/user-attachments/assets/7bb6b299-03e7-4858-b0a5-b262eccebc20" /> | <img width="250" alt="User Profile" src="https://github.com/user-attachments/assets/f71bfa83-7aa9-4d18-a273-fe3aaccb8b10" /> |
 
 ### 🧠 Study, AI & Marketplace
 | Deck Review | AI Generation | Marketplace |
 | :---: | :---: | :---: |
-| <img width="1280" height="2856" alt="Deck Review" src="https://github.com/user-attachments/assets/2a6d8c7f-92f6-4869-b7b1-ddb5d8a22335" />
- | <img width="1280" height="2856" alt="Deck Generation" src="https://github.com/user-attachments/assets/182cbed0-ac38-4552-919f-97198fec35c6" />
- | <img width="1280" height="2856" alt="MarketPlace" src="https://github.com/user-attachments/assets/acb743a9-c0e0-4753-8b19-ae3368f4dbba" />
- |
+| <img width="250" alt="Deck Review" src="https://github.com/user-attachments/assets/2a6d8c7f-92f6-4869-b7b1-ddb5d8a22335" /> | <img width="250" alt="Deck Generation" src="https://github.com/user-attachments/assets/182cbed0-ac38-4552-919f-97198fec35c6" /> | <img width="250" alt="MarketPlace" src="https://github.com/user-attachments/assets/acb743a9-c0e0-4753-8b19-ae3368f4dbba" /> |
 
 ### 📊 Analytics
 | Library Status | Retention Curve | Upcoming Reviews |
 | :---: | :---: | :---: |
-| <img width="1280" height="2856" alt="Library Status" src="https://github.com/user-attachments/assets/9ef2de51-107d-4a69-8749-4e8ddc89bc9b" />
- | <img width="1280" height="2856" alt="Retention Curve" src="https://github.com/user-attachments/assets/3f66c9cd-8a7a-4b93-a5e8-f6e22d83472d" />
- | <img width="1280" height="2856" alt="upcoming reviews" src="https://github.com/user-attachments/assets/79824d49-1aa6-488f-85d6-b43cd828a465" />
- |
+| <img width="250" alt="Library Status" src="https://github.com/user-attachments/assets/9ef2de51-107d-4a69-8749-4e8ddc89bc9b" /> | <img width="250" alt="Retention Curve" src="https://github.com/user-attachments/assets/3f66c9cd-8a7a-4b93-a5e8-f6e22d83472d" /> | <img width="250" alt="upcoming reviews" src="https://github.com/user-attachments/assets/79824d49-1aa6-488f-85d6-b43cd828a465" /> |
 
 ---
 
