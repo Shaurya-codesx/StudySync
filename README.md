@@ -14,6 +14,9 @@
 
 ## 🎬 Demo & Screenshots
 
+### 📺 Watch the Full Demo Video
+*(Click the image below to play the demo on YouTube)*
+
 [![StudySync Demo Video](https://img.youtube.com/vi/NxDSTZW7uQk/maxresdefault.jpg)](https://www.youtube.com/watch?v=NxDSTZW7uQk)
 
 ### 📚 Organization & Profile
