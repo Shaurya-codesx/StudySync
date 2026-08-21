@@ -14,7 +14,7 @@
 
 ## 🎬 Demo & Screenshots
 
-*(Insert Demo Video or GIF here)*
+[![StudySync Demo Video](https://img.youtube.com/vi/NxDSTZW7uQk/maxresdefault.jpg)](https://www.youtube.com/watch?v=NxDSTZW7uQk)
 
 ### 📚 Organization & Profile
 | Login Screen | Home List | Folder View | User Profile |
